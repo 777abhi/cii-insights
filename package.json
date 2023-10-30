@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@types/node": "^20.8.9",
+    "luxon": "3.4.3",
+    "octokit": "3.1.1",
+    "typescript": "5.2.2"
+  },
+  "devDependencies": {
+    "@types/luxon": "^3.3.3"
+  }
+}
