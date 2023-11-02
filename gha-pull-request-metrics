@@ -17,19 +17,23 @@ async function getPullRequestMetrics(owner: string, repo: string) {
     const closedPullRequests = pullRequests.filter((pr) => pr.state === 'closed');
 
     const timeToMergeOpenPRs = openPullRequests.map((pr) => ({
-      title: pr.title,
-      timeToMerge: pr.merged_at ? new Date(pr.merged_at).getTime() - new Date(pr.created_at).getTime() : null,
+      Title: pr.title,
+      TimeToMerge: pr.merged_at
+        ? new Date(pr.merged_at).getTime() - new Date(pr.created_at).getTime() + ' ms'
+        : 'N/A',
     }));
 
     const reviewersFeedback = openPullRequests.map((pr) => ({
-      title: pr.title,
-      requestedReviewers: pr.requested_reviewers.map((reviewer) => reviewer.login),
+      Title: pr.title,
+      RequestedReviewers: pr.requested_reviewers.map((reviewer) => reviewer.login).join(', '),
     }));
 
     console.log('Open Pull Requests:', openPullRequests.length);
     console.log('Closed Pull Requests:', closedPullRequests.length);
-    console.log('Time to Merge Open PRs:', timeToMergeOpenPRs);
-    console.log('Reviewers Feedback for Open PRs:', reviewersFeedback);
+    console.log('Time to Merge Open PRs:');
+    console.table(timeToMergeOpenPRs);
+    console.log('Reviewers Feedback for Open PRs:');
+    console.table(reviewersFeedback);
   } catch (error) {
     console.error('Error:', error.message);
   }
