@@ -1,0 +1,39 @@
+import { Octokit } from 'octokit';
+
+// Create an Octokit instance by providing your GitHub personal access token or authentication method.
+const octokit = new Octokit({
+  auth: 'YOUR_GITHUB_PERSONAL_ACCESS_TOKEN',
+});
+
+async function getPullRequestMetrics(owner: string, repo: string) {
+  try {
+    const { data: pullRequests } = await octokit.rest.pulls.list({
+      owner,
+      repo,
+      state: 'all', // 'all' includes both open and closed pull requests
+    });
+
+    const openPullRequests = pullRequests.filter((pr) => pr.state === 'open');
+    const closedPullRequests = pullRequests.filter((pr) => pr.state === 'closed');
+
+    const timeToMergeOpenPRs = openPullRequests.map((pr) => ({
+      title: pr.title,
+      timeToMerge: pr.merged_at ? new Date(pr.merged_at).getTime() - new Date(pr.created_at).getTime() : null,
+    }));
+
+    const reviewersFeedback = openPullRequests.map((pr) => ({
+      title: pr.title,
+      requestedReviewers: pr.requested_reviewers.map((reviewer) => reviewer.login),
+    }));
+
+    console.log('Open Pull Requests:', openPullRequests.length);
+    console.log('Closed Pull Requests:', closedPullRequests.length);
+    console.log('Time to Merge Open PRs:', timeToMergeOpenPRs);
+    console.log('Reviewers Feedback for Open PRs:', reviewersFeedback);
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
+}
+
+// Replace 'OWNER' and 'REPO' with your GitHub repository's owner and name.
+getPullRequestMetrics('OWNER', 'REPO');
