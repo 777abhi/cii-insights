@@ -1,4 +1,4 @@
-async function getAllTestCases(): Promise<void> {
+export async function getAllTestCases(fetchImpl: typeof fetch = fetch): Promise<string[]> {
   const endpointTestCases = 'https://api.zephyrscale.smartbear.com/v2/testcases';
   const endpointTestExecutions = 'https://api.zephyrscale.smartbear.com/v2/testexecutions';
   const projectKey = 'YOUR_PROJECT_KEY'; // Replace with your actual project key
@@ -16,7 +16,7 @@ async function getAllTestCases(): Promise<void> {
       startAt: startAt.toString(),
     });
 
-    const responseTestCases = await fetch(`${endpointTestCases}?${queryParamsTestCases}`);
+    const responseTestCases = await fetchImpl(`${endpointTestCases}?${queryParamsTestCases}`);
     const dataTestCases = await responseTestCases.json();
 
     const filteredTestCases = dataTestCases.values.filter(
@@ -44,7 +44,7 @@ async function getAllTestCases(): Promise<void> {
       startAt: startAt.toString(),
     });
 
-    const responseTestExecutions = await fetch(`${endpointTestExecutions}?${queryParamsTestExecutions}`);
+    const responseTestExecutions = await fetchImpl(`${endpointTestExecutions}?${queryParamsTestExecutions}`);
     const dataTestExecutions = await responseTestExecutions.json();
 
     const filteredTestExecutions = dataTestExecutions.values.filter(
@@ -71,8 +71,5 @@ async function getAllTestCases(): Promise<void> {
   // Filter final result to include only test cases present in testexecutions
   const finalTestCases = Array.from(allTestCases).filter((testCase) => testExecutionsTestCases.has(testCase));
 
-  console.log(finalTestCases);
-  console.log(`Total Test Cases: ${finalTestCases.length}`);
+  return finalTestCases as string[];
 }
-
-getAllTestCases();

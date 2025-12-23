@@ -1,26 +1,38 @@
-import { test } from "@playwright/test";
-import { Octokit } from "octokit";
+import { expect, test } from "@playwright/test";
 
-// Create an Octokit instance by providing your GitHub personal access token or authentication method.
-const octokit = new Octokit({
-  auth: "xx",
+test("API - GitHub (mocked)", async () => {
+  const mockRuns = [
+    {
+      created_at: "2024-01-02T10:00:00Z",
+      updated_at: "2024-01-02T11:30:00Z",
+      head_commit: { author: { email: "dev1@example.com" } },
+    },
+    {
+      created_at: "2024-01-02T12:00:00Z",
+      updated_at: "2024-01-02T12:20:00Z",
+      head_commit: { author: { email: "dev2@example.com" } },
+    },
+    {
+      created_at: "2024-02-05T09:00:00Z",
+      updated_at: "2024-02-05T10:00:00Z",
+      head_commit: { author: { email: "dev1@example.com" } },
+    },
+  ];
+
+  const uniqueCommitersCount = await getUniqueCommitersCount(mockRuns);
+  expect(uniqueCommitersCount).toEqual([
+    { date: "2024-Jan", commiters: ["dev1@example.com", "dev2@example.com"], count: 2 },
+    { date: "2024-Feb", commiters: ["dev1@example.com"], count: 1 },
+  ]);
+
+  const percentilesByDay = await calculatePercentileByDay(mockRuns);
+  expect(percentilesByDay).toEqual({
+    "2Jan2024": 90, // 90th percentile of [90, 20] minutes is 90
+    "5Feb2024": 60,
+  });
 });
 
-test("API - GitHub", async () => {
-  const owner = "xx";
-  const repo = "xx";
-
-  const runs = await getWorkflowRuns(owner,repo); 
-
-  const uniqueCommitersCount = await getUniqueCommitersCount(runs);
-  console.log(uniqueCommitersCount);
-  console.table(uniqueCommitersCount);
-  const percentilesByDay = calculatePercentileByDay(runs);
-  console.log(percentilesByDay);
-});
-
-async function getUniqueCommitersCount(workflowRuns : any) {
-  
+export async function getUniqueCommitersCount(workflowRuns: any[]) {
   // Group commits by month and store unique committer emails
   const uniqueCommitersByMonth: Record<string, string[]> = {};
 
@@ -55,15 +67,13 @@ async function getUniqueCommitersCount(workflowRuns : any) {
 }
 
 
-function calculatePercentile(data: number[], percentileValue: number) {
+export function calculatePercentile(data: number[], percentileValue: number) {
   const sortedData = data.slice().sort((a, b) => a - b);
   const index = Math.ceil((percentileValue / 100) * sortedData.length) - 1;
   return sortedData[index];
 }
 
-async function calculatePercentileByDay(runs: any) {
-  
-
+export async function calculatePercentileByDay(runs: any[]) {
   // Group runs by date
   const groupedRuns: Record<string, number[]> = {};
 
@@ -88,19 +98,8 @@ async function calculatePercentileByDay(runs: any) {
 
   return percentilesByDay;
 }
-async function getWorkflowRuns(owner: string, repo: string) {
-  
-  const response = await octokit.rest.actions.listWorkflowRunsForRepo({
-    owner,
-    repo,
-    per_page: 100,
-  });
 
-  return response.data.workflow_runs;
-}
-
-
-function calculateTimeDifferenceInHours(created_at: string, updated_at: string): number {
+export function calculateTimeDifferenceInHours(created_at: string, updated_at: string): number {
   const createdDate = new Date(created_at);
   const updatedDate = new Date(updated_at);
 
@@ -111,4 +110,3 @@ function calculateTimeDifferenceInHours(created_at: string, updated_at: string):
 
   return minutesDifference;
 }
-
