@@ -1,0 +1,10 @@
+FROM mcr.microsoft.com/playwright:v1.46.1-jammy
+
+WORKDIR /work
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+CMD ["npx", "playwright", "test"]
