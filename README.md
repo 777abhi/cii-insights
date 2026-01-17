@@ -2,11 +2,13 @@
 
 A lightweight, interactive, modern analytics dashboard designed to synthesize and visualize Quality Engineering (QE) metrics from Git repositories.
 
-![Dashboard Overview](docs/images/dashboard_full.png)
+![Dashboard Overview](docs/images/example_playwright_repo.png)
 
 ## Overview
 
 This application allows engineering teams to gain real-time insights into their development patterns, velocity, and code quality by analyzing Git history. Simply provide a repository URL and branch, and the dashboard will visualize key performance indicators.
+
+The screenshot above demonstrates the analysis of the [playwright-typescript-basics](https://github.com/777abhi/playwright-typescript-basics) repository.
 
 ## Metrics & Engineering Insights
 
