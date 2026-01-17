@@ -13,6 +13,12 @@ import { twMerge } from 'tailwind-merge';
 
 const COLORS = ['#339af0', '#51cf66', '#fcc419', '#ff6b6b', '#845ef7', '#f06595'];
 
+const SAMPLE_REPOS = [
+  { name: 'Playwright Basics', url: 'https://github.com/777abhi/playwright-typescript-basics' },
+  { name: 'React', url: 'https://github.com/facebook/react' },
+  { name: 'Playwright', url: 'https://github.com/microsoft/playwright' }
+];
+
 function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
@@ -172,12 +178,19 @@ export default function App() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data.velocitySeries}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#373a40" />
-                  <XAxis dataKey="date" stroke="#909296" fontSize={12} tickFormatter={d => d.slice(5)} />
+                  <XAxis dataKey="date" stroke="#909296" fontSize={12} tickFormatter={d => d.slice(5)} minTickGap={30} />
                   <YAxis stroke="#909296" fontSize={12} />
                   <RechartsTooltip
                     contentStyle={{ backgroundColor: '#25262b', borderColor: '#373a40', color: '#fff' }}
                   />
-                  <Line type="monotone" dataKey="count" stroke="#339af0" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke="#339af0"
+                    strokeWidth={2}
+                    dot={data.velocitySeries.length < 40}
+                    activeDot={{ r: 6 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </Card>
@@ -285,7 +298,7 @@ export default function App() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.authorMonthlyActivity}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#373a40" />
-                  <XAxis dataKey="date" stroke="#909296" fontSize={12} />
+                  <XAxis dataKey="date" stroke="#909296" fontSize={12} minTickGap={30} />
                   <YAxis stroke="#909296" fontSize={12} />
                   <RechartsTooltip
                     contentStyle={{ backgroundColor: '#25262b', borderColor: '#373a40', color: '#fff' }}
@@ -310,7 +323,22 @@ export default function App() {
         <div className="flex flex-col items-center justify-center h-96 text-dark-muted">
           <Activity size={48} className="mb-4 opacity-50" />
           <h2 className="text-xl font-medium text-white">Ready to Analyze</h2>
-          <p>Enter a Git repository URL above to generate insights.</p>
+          <p className="mb-6">Enter a Git repository URL above to generate insights.</p>
+
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-xs uppercase tracking-wider font-semibold">Try these sample repos:</span>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {SAMPLE_REPOS.map(repo => (
+                <button
+                  key={repo.url}
+                  onClick={() => setRepoUrl(repo.url)}
+                  className="px-3 py-1.5 rounded-full bg-dark-card border border-dark-border hover:border-primary text-sm text-white transition-colors"
+                >
+                  {repo.name}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
