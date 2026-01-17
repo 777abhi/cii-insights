@@ -2,6 +2,10 @@
   "name": "github-analytics",
   "version": "1.0.0",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/777abhi/cii-insights.git"
+  },
   "main": "index.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",

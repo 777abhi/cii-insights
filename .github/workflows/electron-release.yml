@@ -10,6 +10,7 @@ jobs:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
@@ -41,12 +42,8 @@ jobs:
         run: |
           cd client
           # Set VITE_API_URL for Electron compatibility
-          # Windows requires set, others standard
-          if [ "${{ runner.os }}" == "Windows" ]; then
-            set VITE_API_URL=http://localhost:3001 && npm run build
-          else
-            VITE_API_URL=http://localhost:3001 npm run build
-          fi
+          export VITE_API_URL=http://localhost:3001
+          npm run build
         shell: bash
 
       - name: Prepare Electron Build
