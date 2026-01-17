@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { API_BASE_URL } from './config';
+import { API_BASE_URL as DEFAULT_API_BASE_URL } from './config';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import TopAuthors from './pages/TopAuthors';
@@ -14,11 +14,18 @@ const SAMPLE_REPOS = [
 ];
 
 export default function App() {
+  const [apiBaseUrl, setApiBaseUrl] = useState(() => {
+    return localStorage.getItem('apiBaseUrl') || DEFAULT_API_BASE_URL;
+  });
   const [repoUrl, setRepoUrl] = useState('');
   const [branch, setBranch] = useState('main');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem('apiBaseUrl', apiBaseUrl);
+  }, [apiBaseUrl]);
 
   const handleAnalyze = async (e) => {
     e.preventDefault();
@@ -29,7 +36,7 @@ export default function App() {
     setData(null);
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/analyze`, {
+      const response = await axios.post(`${apiBaseUrl}/api/analyze`, {
         repoUrl,
         branch
       });
@@ -53,6 +60,9 @@ export default function App() {
             setBranch={setBranch}
             handleAnalyze={handleAnalyze}
             loading={loading}
+            apiBaseUrl={apiBaseUrl}
+            setApiBaseUrl={setApiBaseUrl}
+            error={error}
           />
         }>
           <Route index element={
@@ -63,7 +73,7 @@ export default function App() {
               SAMPLE_REPOS={SAMPLE_REPOS}
             />
           } />
-          <Route path="manage-repos" element={<ManageRepos />} />
+          <Route path="manage-repos" element={<ManageRepos apiBaseUrl={apiBaseUrl} />} />
           <Route path="authors" element={<TopAuthors data={data} />} />
         </Route>
       </Routes>
