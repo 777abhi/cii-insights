@@ -2,6 +2,10 @@
   "name": "github-analytics-desktop",
   "version": "1.0.0",
   "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/777abhi/cii-insights.git"
+  },
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder",
