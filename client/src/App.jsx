@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { API_BASE_URL } from './config';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import TopAuthors from './pages/TopAuthors';
@@ -28,7 +29,7 @@ export default function App() {
     setData(null);
 
     try {
-      const response = await axios.post('http://localhost:3001/api/analyze', {
+      const response = await axios.post(`${API_BASE_URL}/api/analyze`, {
         repoUrl,
         branch
       });

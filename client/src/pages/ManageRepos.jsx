@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Trash2, Folder, CheckSquare, Square, AlertTriangle } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function ManageRepos() {
     const [repos, setRepos] = useState([]);
@@ -16,7 +17,7 @@ export default function ManageRepos() {
     const fetchRepos = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('http://localhost:3001/api/repos');
+            const res = await axios.get(`${API_BASE_URL}/api/repos`);
             setRepos(res.data);
             // clear selection on refresh
             setSelected(new Set());
@@ -52,7 +53,7 @@ export default function ManageRepos() {
 
         setDeleting(true);
         try {
-            await axios.delete('http://localhost:3001/api/repos', {
+            await axios.delete(`${API_BASE_URL}/api/repos`, {
                 data: all ? { all: true } : { repos: Array.from(selected) }
             });
             await fetchRepos();
