@@ -1,23 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Trash2, Folder, CheckSquare, Square, AlertTriangle } from 'lucide-react';
-import { API_BASE_URL } from '../config';
 
-export default function ManageRepos() {
+export default function ManageRepos({ apiBaseUrl }) {
     const [repos, setRepos] = useState([]);
     const [selected, setSelected] = useState(new Set());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [deleting, setDeleting] = useState(false);
 
-    useEffect(() => {
-        fetchRepos();
-    }, []);
-
-    const fetchRepos = async () => {
+    const fetchRepos = useCallback(async () => {
         try {
             setLoading(true);
-            const res = await axios.get(`${API_BASE_URL}/api/repos`);
+            const res = await axios.get(`${apiBaseUrl}/api/repos`);
             setRepos(res.data);
             // clear selection on refresh
             setSelected(new Set());
@@ -26,7 +21,13 @@ export default function ManageRepos() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [apiBaseUrl]);
+
+    useEffect(() => {
+        if (apiBaseUrl) {
+            fetchRepos();
+        }
+    }, [apiBaseUrl, fetchRepos]);
 
     const toggleSelect = (name) => {
         const newSelected = new Set(selected);
@@ -53,7 +54,7 @@ export default function ManageRepos() {
 
         setDeleting(true);
         try {
-            await axios.delete(`${API_BASE_URL}/api/repos`, {
+            await axios.delete(`${apiBaseUrl}/api/repos`, {
                 data: all ? { all: true } : { repos: Array.from(selected) }
             });
             await fetchRepos();
