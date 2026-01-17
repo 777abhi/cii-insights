@@ -1,0 +1,74 @@
+name: Build and Release Electron App
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Install Root Dependencies
+        run: npm install
+
+      - name: Install Client Dependencies
+        run: |
+          cd client
+          npm install
+
+      - name: Install Electron Dependencies
+        run: |
+          cd electron
+          npm install
+
+      - name: Build Frontend
+        run: |
+          cd client
+          # Set VITE_API_URL for Electron compatibility
+          # Windows requires set, others standard
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            set VITE_API_URL=http://localhost:3001 && npm run build
+          else
+            VITE_API_URL=http://localhost:3001 npm run build
+          fi
+        shell: bash
+
+      - name: Prepare Electron Build
+        run: |
+          cd electron
+          node prepare-build.js
+
+      - name: Build/Package Electron App
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd electron
+          npm run dist
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-build
+          path: |
+            electron/dist/*.exe
+            electron/dist/*.dmg
+            electron/dist/*.zip
+            electron/dist/*.AppImage
+            electron/dist/*.deb
+          if-no-files-found: ignore
