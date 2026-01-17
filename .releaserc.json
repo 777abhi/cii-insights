@@ -1,0 +1,21 @@
+{
+  "branches": ["main"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    "@semantic-release/npm",
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          {"path": "release-assets/electron-artifacts-windows/**/*.exe", "label": "Windows Installer"},
+          {"path": "release-assets/electron-artifacts-mac/**/*.dmg", "label": "Mac Installer"},
+          {"path": "release-assets/electron-artifacts-linux/**/*.AppImage", "label": "Linux AppImage"},
+          {"path": "release-assets/android-artifacts/**/*.apk", "label": "Android APK"}
+        ]
+      }
+    ],
+    "@semantic-release/git"
+  ]
+}

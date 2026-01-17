@@ -1,0 +1,187 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  get-next-version:
+    runs-on: ubuntu-latest
+    outputs:
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Dependencies
+        run: npm install
+      - name: Semantic Release (Dry Run)
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          dry_run: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-electron:
+    needs: get-next-version
+    if: needs.get-next-version.outputs.new_release_published == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact_name: electron-artifacts-windows
+          - os: macos-latest
+            artifact_name: electron-artifacts-mac
+          - os: ubuntu-latest
+            artifact_name: electron-artifacts-linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - uses: actions/setup-java@v4
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Dependencies
+        run: |
+          npm install
+          cd client && npm install
+          cd electron && npm install
+
+      - name: Update Version
+        shell: bash
+        run: |
+          npm version ${{ needs.get-next-version.outputs.new_release_version }} --no-git-tag-version --allow-same-version
+          cd electron && npm version ${{ needs.get-next-version.outputs.new_release_version }} --no-git-tag-version --allow-same-version
+          cd ../client && npm version ${{ needs.get-next-version.outputs.new_release_version }} --no-git-tag-version --allow-same-version
+
+      - name: Build Frontend
+        shell: bash
+        run: |
+          cd client
+          export VITE_API_URL=http://localhost:3001
+          npm run build
+
+      - name: Prepare Electron Build
+        shell: bash
+        run: |
+          cd electron
+          node prepare-build.js
+
+      - name: Build Electron App
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd electron
+          npm run dist -- --publish never
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: |
+            electron/dist/*.exe
+            electron/dist/*.dmg
+            electron/dist/*.zip
+            electron/dist/*.AppImage
+            electron/dist/*.deb
+          if-no-files-found: ignore
+
+  build-android:
+    needs: get-next-version
+    if: needs.get-next-version.outputs.new_release_published == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Install Dependencies
+        run: |
+          npm install
+          cd client && npm install
+
+      - name: Update Version
+        run: |
+           npm version ${{ needs.get-next-version.outputs.new_release_version }} --no-git-tag-version --allow-same-version
+           cd client && npm version ${{ needs.get-next-version.outputs.new_release_version }} --no-git-tag-version --allow-same-version
+
+      - name: Build Frontend
+        run: |
+          cd client
+          npm run build
+
+      - name: Sync Capacitor
+        run: |
+          cd client
+          npx cap sync android
+
+      - name: Build APK
+        run: |
+          cd client/android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-artifacts
+          path: client/android/app/build/outputs/apk/debug/app-debug.apk
+
+  publish-release:
+    needs: [build-electron, build-android, get-next-version]
+    if: needs.get-next-version.outputs.new_release_published == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+
+      - name: Display Downloaded Files
+        run: ls -R release-assets
+
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+            @semantic-release/exec
+            @semantic-release/github
+            @semantic-release/npm
