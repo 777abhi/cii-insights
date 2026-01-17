@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import TopAuthors from './pages/TopAuthors';
+import ManageRepos from './pages/ManageRepos';
 
 const SAMPLE_REPOS = [
   { name: 'Playwright Basics', url: 'https://github.com/777abhi/playwright-typescript-basics' },
@@ -61,6 +62,7 @@ export default function App() {
               SAMPLE_REPOS={SAMPLE_REPOS}
             />
           } />
+          <Route path="manage-repos" element={<ManageRepos />} />
           <Route path="authors" element={<TopAuthors data={data} />} />
         </Route>
       </Routes>

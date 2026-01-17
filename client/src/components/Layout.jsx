@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Activity, Users, LayoutDashboard, Search, RefreshCw } from 'lucide-react';
+import { Activity, Users, LayoutDashboard, Search, RefreshCw, Folder } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -78,6 +78,18 @@ export default function Layout({
                 >
                     <Users size={18} />
                     Top Authors
+                </Link>
+                <Link
+                    to="/manage-repos"
+                    className={cn(
+                        "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-b-2",
+                        location.pathname === "/manage-repos"
+                            ? "border-primary text-primary"
+                            : "border-transparent text-dark-muted hover:text-white"
+                    )}
+                >
+                    <Folder size={18} />
+                    Manage Repos
                 </Link>
             </nav>
 

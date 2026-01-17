@@ -88,6 +88,56 @@ app.post('/api/analyze', async (req, res) => {
   }
 });
 
+// GET /api/repos - List local repositories
+app.get('/api/repos', (req, res) => {
+  try {
+    const repos = fs.readdirSync(REPO_DIR).filter(file => {
+      return fs.statSync(path.join(REPO_DIR, file)).isDirectory();
+    });
+    // Optional: Get size or last modified time if needed
+    const repoDetails = repos.map(name => ({ name }));
+    res.json(repoDetails);
+  } catch (error) {
+    console.error('Error listing repositories:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// DELETE /api/repos - Delete specified repositories
+app.delete('/api/repos', (req, res) => {
+  const { repos, all } = req.body;
+
+  try {
+    if (all) {
+      const allRepos = fs.readdirSync(REPO_DIR);
+      allRepos.forEach(repo => {
+        const repoPath = path.join(REPO_DIR, repo);
+        fs.rmSync(repoPath, { recursive: true, force: true });
+      });
+      return res.json({ message: 'All repositories deleted' });
+    }
+
+    if (repos && Array.isArray(repos)) {
+      const results = [];
+      repos.forEach(repoName => {
+        const repoPath = path.join(REPO_DIR, repoName);
+        if (fs.existsSync(repoPath)) {
+          fs.rmSync(repoPath, { recursive: true, force: true });
+          results.push({ name: repoName, status: 'deleted' });
+        } else {
+          results.push({ name: repoName, status: 'not_found' });
+        }
+      });
+      return res.json({ results });
+    }
+
+    res.status(400).json({ error: 'Invalid request. Provide "repos" array or "all": true' });
+  } catch (error) {
+    console.error('Error deleting repositories:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 function parseGitLog(logOutput) {
   const lines = logOutput.split('\n');
   const commits = [];
