@@ -127,29 +127,29 @@ function parseGitLog(logOutput) {
           changes: parseInt(fileMatch[2], 10)
         });
       } else {
-          // Check for summary line (usually last line of commit block)
-          // We can calculate total additions/deletions from file lines if summary regex is tricky or parse summary directly.
-          // Let's parse summary for validation or just rely on file lines?
-          // Actually, '10 +++++-----' in file line gives total changes, not split.
-          // Wait, 'git log --stat' output:
-          // file | changes +++---
-          // The number is total changes (add + del). The + and - show ratio.
-          // BUT the summary line at bottom: " 1 file changed, 1 insertion(+), 1 deletion(-)" is exact.
-          // However, summary line is per commit.
+        // Check for summary line (usually last line of commit block)
+        // We can calculate total additions/deletions from file lines if summary regex is tricky or parse summary directly.
+        // Let's parse summary for validation or just rely on file lines?
+        // Actually, '10 +++++-----' in file line gives total changes, not split.
+        // Wait, 'git log --stat' output:
+        // file | changes +++---
+        // The number is total changes (add + del). The + and - show ratio.
+        // BUT the summary line at bottom: " 1 file changed, 1 insertion(+), 1 deletion(-)" is exact.
+        // However, summary line is per commit.
 
-          // Let's rely on the summary line for exact addition/deletion counts per commit if possible.
-          // But it's easier to just sum up files if we want hotspots.
-          // For Churn (add vs del), we really need the summary line.
+        // Let's rely on the summary line for exact addition/deletion counts per commit if possible.
+        // But it's easier to just sum up files if we want hotspots.
+        // For Churn (add vs del), we really need the summary line.
 
-          if (line.includes('changed') && (line.includes('insertion') || line.includes('deletion'))) {
-             // Parse summary
-             // " 2 files changed, 10 insertions(+), 5 deletions(-)"
-             const insertionsMatch = line.match(/(\d+) insertion/);
-             const deletionsMatch = line.match(/(\d+) deletion/);
+        if (line.includes('changed') && (line.includes('insertion') || line.includes('deletion'))) {
+          // Parse summary
+          // " 2 files changed, 10 insertions(+), 5 deletions(-)"
+          const insertionsMatch = line.match(/(\d+) insertion/);
+          const deletionsMatch = line.match(/(\d+) deletion/);
 
-             if (insertionsMatch) currentCommit.additions = parseInt(insertionsMatch[1], 10);
-             if (deletionsMatch) currentCommit.deletions = parseInt(deletionsMatch[1], 10);
-          }
+          if (insertionsMatch) currentCommit.additions = parseInt(insertionsMatch[1], 10);
+          if (deletionsMatch) currentCommit.deletions = parseInt(deletionsMatch[1], 10);
+        }
       }
     }
   }
@@ -159,18 +159,65 @@ function parseGitLog(logOutput) {
 
   // --- Calculate Metrics ---
 
-  // 1. Velocity (Commits per week/day) - let's do simple daily buckets for the chart
+  // 1. Velocity (Commits per week/day)
   const commitsByDay = {};
+
+  // New Metrics Aggregation
+  const authorStats = {}; // { authorEmail: { name, email, commits, additions, deletions } }
+  const monthlyAuthorStats = {}; // { "YYYY-MM": { authorEmail: count } }
+
   commits.forEach(c => {
-    // git log --date=iso output example: "2020-09-20 14:00:00 -0700"
+    // 1. Velocity
     const day = c.date.split(' ')[0];
     commitsByDay[day] = (commitsByDay[day] || 0) + 1;
+
+    // Author Stats
+    const authorKey = c.email || c.author; // Use email as key if available for uniqueness
+    if (!authorStats[authorKey]) {
+      authorStats[authorKey] = {
+        name: c.author,
+        email: c.email,
+        commits: 0,
+        additions: 0,
+        deletions: 0
+      };
+    }
+    authorStats[authorKey].commits++;
+    authorStats[authorKey].additions += (c.additions || 0);
+    authorStats[authorKey].deletions += (c.deletions || 0);
+
+    // Monthly Activity
+    const month = c.date.substring(0, 7); // YYYY-MM
+    if (!monthlyAuthorStats[month]) {
+      monthlyAuthorStats[month] = {};
+    }
+    monthlyAuthorStats[month][authorKey] = (monthlyAuthorStats[month][authorKey] || 0) + 1;
   });
 
   const velocitySeries = Object.keys(commitsByDay).sort().map(date => ({
     date,
     count: commitsByDay[date]
   }));
+
+  // Process Author Stats for response (Top 10)
+  const topContributors = Object.values(authorStats)
+    .sort((a, b) => b.commits - a.commits)
+    .slice(0, 10);
+
+  // Process Monthly Activity for response
+  // We want to return something like: [{ date: '2023-01', "Author A": 5, "Author B": 2 }]
+  // But maybe just top 5 authors to keep chart clean?
+  const top5Authors = topContributors.slice(0, 5).map(a => a.email || a.name);
+  const authorMonthlyActivity = Object.keys(monthlyAuthorStats).sort().map(month => {
+    const entry = { date: month };
+    top5Authors.forEach(authKey => {
+      // Find name again effectively or just use the key if we stored it
+      const authName = authorStats[authKey]?.name || authKey;
+      entry[authName] = monthlyAuthorStats[month][authKey] || 0;
+    });
+    return entry;
+  });
+
 
   // 2. Quality (Message Score)
   const conventionalRegex = /^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|revert)(\(.+\))?: .+$/;
@@ -213,20 +260,20 @@ function parseGitLog(logOutput) {
 
   // 5. Commit Type Breakdown
   const typeCounts = {
-      feat: 0, fix: 0, chore: 0, other: 0
+    feat: 0, fix: 0, chore: 0, other: 0
   };
   commits.forEach(c => {
-      const match = c.subject.match(/^([a-z]+)(\(.*\))?:/);
-      if (match) {
-          const type = match[1];
-          if (['feat', 'fix', 'chore', 'docs', 'style', 'refactor', 'test'].includes(type)) {
-              typeCounts[type] = (typeCounts[type] || 0) + 1;
-          } else {
-              typeCounts.other++;
-          }
+    const match = c.subject.match(/^([a-z]+)(\(.*\))?:/);
+    if (match) {
+      const type = match[1];
+      if (['feat', 'fix', 'chore', 'docs', 'style', 'refactor', 'test'].includes(type)) {
+        typeCounts[type] = (typeCounts[type] || 0) + 1;
       } else {
-          typeCounts.other++;
+        typeCounts.other++;
       }
+    } else {
+      typeCounts.other++;
+    }
   });
 
   const commitTypes = Object.entries(typeCounts).map(([name, value]) => ({ name, value }));
@@ -238,7 +285,9 @@ function parseGitLog(logOutput) {
     churn: { added: churnAdded, deleted: churnDeleted }, // Bar chart or stats
     hotspots,       // Bar chart
     commitTypes,    // Pie chart
-    recentCommits: commits.slice(0, 10) // List
+    recentCommits: commits.slice(0, 10), // List
+    topContributors,
+    authorMonthlyActivity
   };
 }
 
