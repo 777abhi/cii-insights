@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import { API_BASE_URL as DEFAULT_API_BASE_URL } from './config';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
@@ -26,6 +27,16 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('apiBaseUrl', apiBaseUrl);
   }, [apiBaseUrl]);
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      import('capacitor-nodejs').then(({ NodeJS }) => {
+        NodeJS.whenReady().then(() => {
+          console.log('NodeJS engine is ready!');
+        });
+      }).catch(err => console.error('Failed to load capacitor-nodejs', err));
+    }
+  }, []);
 
   const handleAnalyze = async (e) => {
     e.preventDefault();

@@ -1,0 +1,4 @@
+Server running on port 3001
+To connect from Android, use API Base URL: http://192.168.0.2:3001
+Using IsoGitProvider
+Cloning https://github.com/777abhi/playwright-typescript-basics to /tmp/test-repos-iso-2/playwright-typescript-basics (IsoGit)...

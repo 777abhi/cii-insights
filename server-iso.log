@@ -1,0 +1,16 @@
+Server running on port 3001
+To connect from Android, use API Base URL: http://192.168.0.2:3001
+Using IsoGitProvider
+Cloning https://github.com/777abhi/playwright-typescript-basics to /tmp/test-repos-iso/playwright-typescript-basics (IsoGit)...
+Error processing repository: NotFoundError: Could not find main.
+    at GitRefManager.resolveAgainstMap (/app/server/node_modules/isomorphic-git/index.cjs:2325:11)
+    at _fetch (/app/server/node_modules/isomorphic-git/index.cjs:8707:42)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async _clone (/app/server/node_modules/isomorphic-git/index.cjs:9056:42)
+    at async Object.clone (/app/server/node_modules/isomorphic-git/index.cjs:9190:12)
+    at async IsoGitProvider.prepareRepo (/app/server/git-service.js:235:13)
+    at async /app/server/index.js:45:5 {
+  caller: 'git.clone',
+  code: 'NotFoundError',
+  data: { what: 'main' }
+}
