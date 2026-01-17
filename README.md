@@ -2,55 +2,36 @@
 
 A lightweight, interactive, modern analytics dashboard designed to synthesize and visualize Quality Engineering (QE) metrics from Git repositories.
 
-![Dashboard Overview](docs/images/example_playwright_repo.png)
+![Dashboard Overview](docs/images/dashboard.png)
 
 ## Overview
 
 This application allows engineering teams to gain real-time insights into their development patterns, velocity, and code quality by analyzing Git history. Simply provide a repository URL and branch, and the dashboard will visualize key performance indicators.
 
-The screenshot above demonstrates the analysis of the [playwright-typescript-basics](https://github.com/777abhi/playwright-typescript-basics) repository.
+## Features
 
-## Metrics & Engineering Insights
+### 📊 Dashboard Metrics
+- **Velocity**: Track commit volume over time to understand team cadence.
+- **Quality Score**: Analyze adherence to [Conventional Commits](https://www.conventionalcommits.org/).
+- **Code Churn**: Measure Lines Added vs. Deleted to spot refactoring or rapid growth.
+- **Hotspots**: Identify frequently modified files ("God Classes") that may need attention.
+- **Commit Types**: Breakdown of effort (Features vs. Fixes vs. Chores).
 
-The dashboard provides the following metrics to answer critical engineering questions:
+### 👥 Top Authors
+Analyze individual contributor performance and patterns.
+- **Top Contributors**: Ranked list by commit count and code impact.
+- **Monthly Activity**: Visualizing author contributions over time.
 
-### 1. Velocity (Commit Activity)
-*   **Metric:** Volume of commits over time (Daily/Weekly).
-*   **Description:** Tracks the frequency of changes to the codebase.
-*   **Engineering Insight:**
-    *   *How fast is the team moving?*
-    *   *Are there bottlenecks or periods of inactivity?*
-    *   *Is the delivery cadence consistent?*
+![Top Authors](docs/images/top_authors.png)
 
-### 2. Quality Score (Conventional Commits)
-*   **Metric:** Percentage of commit messages following the [Conventional Commits](https://www.conventionalcommits.org/) standard.
-*   **Description:** Analyzes commit subjects for prefixes like `feat:`, `fix:`, `chore:`, etc.
-*   **Engineering Insight:**
-    *   *How disciplined is the team in documenting changes?*
-    *   *Are we maintaining a clean and parseable history for automated release notes?*
+### 📂 Repository Management
+Manage your local workspace directly from the app.
+- **List Repos**: View all repositories cloned by the application.
+- **Cleanup**: Delete specific or all repositories to free up disk space.
 
-### 3. Code Churn
-*   **Metric:** Ratio of Lines Added vs. Lines Deleted (rolling 30-day window).
-*   **Description:** Measures the magnitude of code flux.
-*   **Engineering Insight:**
-    *   *Is the code stabilizing or becoming more volatile?*
-    *   *High deletion rates might indicate refactoring, while high addition rates suggest feature growth.*
+![Manage Repos](docs/images/manage_repos.png)
 
-### 4. Hotspots
-*   **Metric:** Files modified most frequently.
-*   **Description:** Identifies modules or files that are touched in many commits.
-*   **Engineering Insight:**
-    *   *Where is the technical debt?*
-    *   *Which files are "god classes" or potential single points of failure?*
-    *   *Which areas of the code carry the highest risk of regression?*
-
-### 5. Commit Type Breakdown
-*   **Metric:** Distribution of work types (Features, Fixes, Chores, etc.).
-*   **Engineering Insight:**
-    *   *Where are we spending our effort? (New features vs. bug fixing)*
-    *   *Is the maintenance burden (chores/fixes) outweighing value delivery (features)?*
-
-## getting Started
+## Getting Started
 
 ### Prerequisites
 *   Node.js (v18+)
@@ -61,25 +42,23 @@ The dashboard provides the following metrics to answer critical engineering ques
 1.  Clone the repository.
 2.  Install dependencies:
     ```bash
-    # Backend
-    cd server
+    # Root
     npm install
 
+    # Backend
+    cd server && npm install
+
     # Frontend
-    cd ../client
-    npm install
+    cd ../client && npm install
     ```
 
 ### Running the App
 
-1.  Start the backend server (runs on port 3001):
+1.  Start both server and client with a single command:
     ```bash
-    cd server
-    node index.js
-    ```
-2.  Start the frontend (runs on port 5173):
-    ```bash
-    cd client
     npm run dev
     ```
-3.  Open `http://localhost:5173` in your browser.
+2.  Open `http://localhost:5173` (or the port shown in terminal) in your browser.
+
+### Security
+This project uses `npm audit` to ensure dependency security. Run `npm audit fix` if vulnerabilities are reported.
