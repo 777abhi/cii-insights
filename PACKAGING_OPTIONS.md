@@ -64,3 +64,35 @@ The application is configured as a PWA. This means if you host the "Browser App"
 3. It will install as a standalone app on your device.
 
 **Note:** The backend still runs on the server. The mobile app interacts with the remote backend.
+
+## 4. Android App (APK)
+
+The application can be packaged as a native Android app using Capacitor.
+
+### Prerequisites
+- Node.js and npm.
+- Android Studio and Android SDK (for local build).
+
+### How to Build (Local)
+1. **Initialize and Build Frontend:**
+   ```bash
+   cd client
+   npm install
+   npm run build
+   ```
+2. **Sync with Android:**
+   ```bash
+   npx cap sync android
+   ```
+3. **Open in Android Studio:**
+   ```bash
+   npx cap open android
+   ```
+   Or build via command line:
+   ```bash
+   cd android
+   ./gradlew assembleDebug
+   ```
+
+### CI/CD Pipeline
+A GitHub Actions workflow (`android-release.yml`) is configured to automatically build and upload the APK artifact on push to main branches.
