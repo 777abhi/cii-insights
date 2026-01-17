@@ -3,6 +3,7 @@ const cors = require('cors');
 const simpleGit = require('simple-git');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const { parseISO, format, startOfWeek, subDays } = require('date-fns');
 
 const app = express();
@@ -341,6 +342,21 @@ function parseGitLog(logOutput) {
   };
 }
 
+function getLocalIpAddress() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      // Skip internal (i.e. 127.0.0.1) and non-ipv4 addresses
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return 'localhost';
+}
+
 app.listen(PORT, () => {
+  const ip = getLocalIpAddress();
   console.log(`Server running on port ${PORT}`);
+  console.log(`To connect from Android, use API Base URL: http://${ip}:${PORT}`);
 });
