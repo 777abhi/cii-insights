@@ -13,3 +13,6 @@
 12:11:07 AM [vite] (client) hmr update /src/App.jsx, /src/pages/ManageRepos.jsx, /src/index.css
 12:11:39 AM [vite] (client) ✨ new dependencies optimized: isomorphic-git/http/web
 12:11:39 AM [vite] (client) ✨ optimized dependencies changed. reloading
+12:31:22 AM [vite] (client) hmr update /src/index.css, /src/App.jsx, /src/pages/ManageRepos.jsx
+12:31:44 AM [vite] (client) hmr update /src/App.jsx, /src/pages/ManageRepos.jsx, /src/index.css
+12:31:44 AM [vite] (client) hmr update /src/App.jsx, /src/pages/ManageRepos.jsx, /src/index.css

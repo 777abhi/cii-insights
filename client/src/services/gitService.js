@@ -43,9 +43,21 @@ export const GitService = {
 
         let exists = false;
         try {
-            await fs.promises.stat(dir);
+            // Robust check: ensure .git directory exists
+            await fs.promises.stat(`${dir}/.git`);
             exists = true;
         } catch (e) {}
+
+        // If directory exists but .git is missing (e.g. previous failed clone), treat as not exists
+        if (!exists) {
+            try {
+                const stat = await fs.promises.stat(dir);
+                if (stat) {
+                    console.log(`[GitService] ${repoName} exists but is invalid. Deleting...`);
+                    await this.deleteRepo(repoName);
+                }
+            } catch(e) { /* ignore if dir doesn't exist */ }
+        }
 
         if (exists) {
             console.log(`[GitService] Pulling ${repoName}...`);
