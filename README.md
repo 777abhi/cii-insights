@@ -1,64 +1,51 @@
 # QE Analytics Dashboard
 
-A lightweight, interactive, modern analytics dashboard designed to synthesize and visualize Quality Engineering (QE) metrics from Git repositories.
+A modern, cross-platform analytics dashboard for visualizing Quality Engineering metrics from Git repositories.
 
 ![Dashboard Overview](docs/images/dashboard.png)
 
-## Overview
+## 🚀 Overview
 
-This application allows engineering teams to gain real-time insights into their development patterns, velocity, and code quality by analyzing Git history. Simply provide a repository URL and branch, and the dashboard will visualize key performance indicators.
+Gain real-time insights into your team's development velocity, code quality, and churn. The QE Analytics Dashboard parses Git history to provide actionable metrics, helping engineering teams improve their processes.
 
-## Features
+## ✨ Key Features
 
-### 📊 Dashboard Metrics
-- **Velocity**: Track commit volume over time to understand team cadence.
-- **Quality Score**: Analyze adherence to [Conventional Commits](https://www.conventionalcommits.org/).
-- **Code Churn**: Measure Lines Added vs. Deleted to spot refactoring or rapid growth.
-- **Hotspots**: Identify frequently modified files ("God Classes") that may need attention.
-- **Commit Types**: Breakdown of effort (Features vs. Fixes vs. Chores).
+### 📊 Comprehensive Metrics
+*   **Velocity**: Visualizes commit volume to track team cadence.
+*   **Quality Score**: Monitors adherence to Conventional Commits standards.
+*   **Code Churn**: Highlights lines added vs. deleted to identify refactoring efforts.
+*   **Hotspots**: Detects frequently modified files ("God Classes") that may need refactoring.
 
-### 👥 Top Authors
-Analyze individual contributor performance and patterns.
-- **Top Contributors**: Ranked list by commit count and code impact.
-- **Monthly Activity**: Visualizing author contributions over time.
+### 👥 Team Insights
+*   **Top Contributors**: Identifies most active authors.
+*   **Activity Trends**: Visualizes individual contributions over time.
 
 ![Top Authors](docs/images/top_authors.png)
 
+### 🌍 Cross-Platform Support
+Use the dashboard where it suits you best:
+*   **Web**: Run as a self-hosted web application or Docker container.
+*   **Desktop**: Native application for Windows, macOS, and Linux (Electron).
+*   **Mobile**: Optimized PWA and native Android support for insights on the go.
+
 ### 📂 Repository Management
-Manage your local workspace directly from the app.
-- **List Repos**: View all repositories cloned by the application.
-- **Cleanup**: Delete specific or all repositories to free up disk space.
+Easily manage and switch between multiple local repositories directly from the UI.
 
 ![Manage Repos](docs/images/manage_repos.png)
 
-## Getting Started
+## 🏁 Getting Started
 
-### Prerequisites
-*   Node.js (v18+)
-*   Git
+### Quick Start (Docker)
+The easiest way to run the dashboard is using Docker:
 
-### Installation
+```bash
+docker-compose up --build
+```
 
-1.  Clone the repository.
-2.  Install dependencies:
-    ```bash
-    # Root
-    npm install
+Then visit `http://localhost:8080`.
 
-    # Backend
-    cd server && npm install
+### For Developers
+If you want to contribute, build from source, or run the application locally without Docker, please check our [Developer Guide](DEVELOPER.md).
 
-    # Frontend
-    cd ../client && npm install
-    ```
-
-### Running the App
-
-1.  Start both server and client with a single command:
-    ```bash
-    npm run dev
-    ```
-2.  Open `http://localhost:5173` (or the port shown in terminal) in your browser.
-
-### Security
-This project uses `npm audit` to ensure dependency security. Run `npm audit fix` if vulnerabilities are reported.
+## 📄 License
+ISC
