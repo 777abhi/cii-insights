@@ -9,22 +9,10 @@ function cn(...inputs) {
 }
 
 export default function Layout({
-    repoUrl, setRepoUrl, branch, setBranch, handleAnalyze, loading,
-    apiBaseUrl, setApiBaseUrl, error
+    repoUrl, setRepoUrl, branch, setBranch, handleAnalyze, loading, error, progress
 }) {
     const location = useLocation();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [tempUrl, setTempUrl] = useState(apiBaseUrl);
-
-    const handleSaveSettings = () => {
-        setApiBaseUrl(tempUrl);
-        setIsSettingsOpen(false);
-    };
-
-    const handleOpenSettings = () => {
-        setTempUrl(apiBaseUrl);
-        setIsSettingsOpen(true);
-    };
 
     return (
         <div className="min-h-screen bg-dark-bg p-6 text-dark-text relative">
@@ -35,7 +23,7 @@ export default function Layout({
                         <Activity className="text-primary" />
                         QE Analytics Dashboard
                     </h1>
-                    <p className="text-dark-muted mt-1">Real-time Quality Engineering Metrics</p>
+                    <p className="text-dark-muted mt-1">Real-time Quality Engineering Metrics (Standalone)</p>
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -65,16 +53,24 @@ export default function Layout({
                             {loading ? <RefreshCw className="animate-spin" size={16} /> : "Analyze"}
                         </button>
                     </form>
-
-                    <button
-                        onClick={handleOpenSettings}
-                        className="p-2 text-dark-muted hover:text-white transition-colors"
-                        title="Settings"
-                    >
-                        <Settings size={24} />
-                    </button>
                 </div>
             </header>
+
+            {/* Progress / Loading State */}
+            {loading && progress && (
+                <div className="mb-6">
+                    <div className="flex justify-between text-xs text-dark-muted mb-1">
+                        <span>Analysis in progress...</span>
+                        <span>{progress}</span>
+                    </div>
+                    <div className="w-full bg-dark-border rounded-full h-2">
+                        <div
+                            className="bg-primary h-2 rounded-full transition-all duration-300"
+                            style={{ width: progress.includes('%') ? progress.split(':')[1] : '100%', opacity: progress.includes('%') ? 1 : 0.5 }}
+                        ></div>
+                    </div>
+                </div>
+            )}
 
             {/* Error Alert */}
             {error && (
@@ -131,54 +127,6 @@ export default function Layout({
             <main>
                 <Outlet />
             </main>
-
-            {/* Settings Modal */}
-            {isSettingsOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-dark-card border border-dark-border rounded-lg shadow-xl w-full max-w-md p-6">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                <Settings size={20} />
-                                Settings
-                            </h2>
-                            <button onClick={() => setIsSettingsOpen(false)} className="text-dark-muted hover:text-white">
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-dark-muted mb-2">
-                                API Base URL
-                            </label>
-                            <input
-                                type="text"
-                                className="input w-full"
-                                placeholder="http://localhost:3001"
-                                value={tempUrl}
-                                onChange={(e) => setTempUrl(e.target.value)}
-                            />
-                            <p className="text-xs text-dark-muted mt-2">
-                                For Android, use your computer's IP address (e.g., http://192.168.1.5:3001).
-                            </p>
-                        </div>
-
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setIsSettingsOpen(false)}
-                                className="px-4 py-2 rounded-lg bg-dark-bg border border-dark-border text-white hover:bg-dark-border transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSaveSettings}
-                                className="btn btn-primary"
-                            >
-                                Save Changes
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

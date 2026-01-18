@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
 import { Trash2, Folder, CheckSquare, Square, AlertTriangle } from 'lucide-react';
+import { GitService } from '../services/gitService';
 
-export default function ManageRepos({ apiBaseUrl }) {
+export default function ManageRepos() {
     const [repos, setRepos] = useState([]);
     const [selected, setSelected] = useState(new Set());
     const [loading, setLoading] = useState(true);
@@ -12,8 +12,8 @@ export default function ManageRepos({ apiBaseUrl }) {
     const fetchRepos = useCallback(async () => {
         try {
             setLoading(true);
-            const res = await axios.get(`${apiBaseUrl}/api/repos`);
-            setRepos(res.data);
+            const list = await GitService.listRepos();
+            setRepos(list);
             // clear selection on refresh
             setSelected(new Set());
         } catch (err) {
@@ -21,13 +21,11 @@ export default function ManageRepos({ apiBaseUrl }) {
         } finally {
             setLoading(false);
         }
-    }, [apiBaseUrl]);
+    }, []);
 
     useEffect(() => {
-        if (apiBaseUrl) {
-            fetchRepos();
-        }
-    }, [apiBaseUrl, fetchRepos]);
+        fetchRepos();
+    }, [fetchRepos]);
 
     const toggleSelect = (name) => {
         const newSelected = new Set(selected);
@@ -54,9 +52,13 @@ export default function ManageRepos({ apiBaseUrl }) {
 
         setDeleting(true);
         try {
-            await axios.delete(`${apiBaseUrl}/api/repos`, {
-                data: all ? { all: true } : { repos: Array.from(selected) }
-            });
+            if (all) {
+                await GitService.deleteAllRepos();
+            } else {
+                for (const name of selected) {
+                    await GitService.deleteRepo(name);
+                }
+            }
             await fetchRepos();
         } catch (err) {
             alert("Failed to delete: " + err.message);

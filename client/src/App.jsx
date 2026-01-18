@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { API_BASE_URL as DEFAULT_API_BASE_URL } from './config';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import TopAuthors from './pages/TopAuthors';
 import ManageRepos from './pages/ManageRepos';
+import { GitService } from './services/gitService';
+import { AnalysisService } from './services/analysisService';
 
 const SAMPLE_REPOS = [
   { name: 'Playwright Basics', url: 'https://github.com/777abhi/playwright-typescript-basics' },
@@ -14,18 +14,12 @@ const SAMPLE_REPOS = [
 ];
 
 export default function App() {
-  const [apiBaseUrl, setApiBaseUrl] = useState(() => {
-    return localStorage.getItem('apiBaseUrl') || DEFAULT_API_BASE_URL;
-  });
   const [repoUrl, setRepoUrl] = useState('');
   const [branch, setBranch] = useState('main');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    localStorage.setItem('apiBaseUrl', apiBaseUrl);
-  }, [apiBaseUrl]);
+  const [progress, setProgress] = useState('');
 
   const handleAnalyze = async (e) => {
     e.preventDefault();
@@ -34,18 +28,33 @@ export default function App() {
     setLoading(true);
     setError(null);
     setData(null);
+    setProgress('Initializing...');
 
     try {
-      const response = await axios.post(`${apiBaseUrl}/api/analyze`, {
-        repoUrl,
-        branch
+      await GitService.cloneOrPull(repoUrl, branch, (phase) => {
+          // phase event from isomorphic-git: { phase, loaded, total }
+          if (phase.total) {
+              setProgress(`${phase.phase}: ${Math.round(phase.loaded / phase.total * 100)}%`);
+          } else {
+              setProgress(`${phase.phase}...`);
+          }
       });
-      setData(response.data);
+
+      setProgress('Analyzing history...');
+      const log = await GitService.getLog(repoUrl);
+      const metrics = AnalysisService.analyze(log);
+
+      // Inject repo name
+      metrics.repo = GitService.getRepoName(repoUrl);
+      metrics.branch = branch;
+
+      setData(metrics);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || err.message);
+      setError(err.message || 'Analysis failed');
     } finally {
       setLoading(false);
+      setProgress('');
     }
   };
 
@@ -60,9 +69,8 @@ export default function App() {
             setBranch={setBranch}
             handleAnalyze={handleAnalyze}
             loading={loading}
-            apiBaseUrl={apiBaseUrl}
-            setApiBaseUrl={setApiBaseUrl}
             error={error}
+            progress={progress}
           />
         }>
           <Route index element={
@@ -73,7 +81,7 @@ export default function App() {
               SAMPLE_REPOS={SAMPLE_REPOS}
             />
           } />
-          <Route path="manage-repos" element={<ManageRepos apiBaseUrl={apiBaseUrl} />} />
+          <Route path="manage-repos" element={<ManageRepos />} />
           <Route path="authors" element={<TopAuthors data={data} />} />
         </Route>
       </Routes>
