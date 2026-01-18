@@ -1,0 +1,107 @@
+name: Release Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    outputs:
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
+      new_release_git_tag: ${{ steps.semantic.outputs.new_release_git_tag }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v4
+        id: semantic
+        with:
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+            @semantic-release/exec
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-android:
+    needs: release
+    if: needs.release.outputs.new_release_published == 'true'
+    uses: ./.github/workflows/android-release.yml
+    with:
+      ref: ${{ needs.release.outputs.new_release_git_tag }}
+
+  build-electron:
+    needs: release
+    if: needs.release.outputs.new_release_published == 'true'
+    uses: ./.github/workflows/electron-release.yml
+    with:
+      ref: ${{ needs.release.outputs.new_release_git_tag }}
+
+  publish-assets:
+    name: Publish Assets to Release
+    needs: [release, build-android, build-electron]
+    if: needs.release.outputs.new_release_published == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Android Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: artifacts/android
+
+      - name: Download Electron Artifacts (Ubuntu)
+        uses: actions/download-artifact@v4
+        with:
+          name: ubuntu-latest-build
+          path: artifacts/ubuntu
+        continue-on-error: true
+
+      - name: Download Electron Artifacts (Windows)
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-latest-build
+          path: artifacts/windows
+        continue-on-error: true
+
+      - name: Download Electron Artifacts (macOS)
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-latest-build
+          path: artifacts/macos
+        continue-on-error: true
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.release.outputs.new_release_git_tag }}
+          files: |
+            artifacts/android/**/*.apk
+            artifacts/ubuntu/**/*.deb
+            artifacts/ubuntu/**/*.AppImage
+            artifacts/windows/**/*.exe
+            artifacts/macos/**/*.dmg
+            artifacts/macos/**/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
