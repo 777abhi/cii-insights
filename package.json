@@ -13,7 +13,7 @@
     "client": "cd client && npm run dev"
   },
   "keywords": [],
-  "author": "",
+  "author": "777abhi <777abhi@users.noreply.github.com>",
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.39.0",
