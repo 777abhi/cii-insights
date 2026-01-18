@@ -1,0 +1,18 @@
+
+> client@0.0.0 dev
+> vite
+
+
+  VITE v7.3.1  ready in 310 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+12:07:58 AM [vite] (client) ✨ new dependencies optimized: vite-plugin-node-polyfills/shims/buffer, vite-plugin-node-polyfills/shims/global, vite-plugin-node-polyfills/shims/process
+12:07:58 AM [vite] (client) ✨ optimized dependencies changed. reloading
+12:09:19 AM [vite] (client) hmr update /src/App.jsx, /src/pages/ManageRepos.jsx, /src/index.css
+12:11:07 AM [vite] (client) hmr update /src/App.jsx, /src/pages/ManageRepos.jsx, /src/index.css
+12:11:39 AM [vite] (client) ✨ new dependencies optimized: isomorphic-git/http/web
+12:11:39 AM [vite] (client) ✨ optimized dependencies changed. reloading
+12:31:22 AM [vite] (client) hmr update /src/index.css, /src/App.jsx, /src/pages/ManageRepos.jsx
+12:31:44 AM [vite] (client) hmr update /src/App.jsx, /src/pages/ManageRepos.jsx, /src/index.css
+12:31:44 AM [vite] (client) hmr update /src/App.jsx, /src/pages/ManageRepos.jsx, /src/index.css
