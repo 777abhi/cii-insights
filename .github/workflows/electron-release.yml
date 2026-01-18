@@ -1,8 +1,13 @@
 name: Build and Release Electron App
 
 on:
-  push:
-    branches: [ main, master ]
+  workflow_call:
+    inputs:
+      ref:
+        description: 'Git ref to checkout'
+        required: false
+        default: ''
+        type: string
   workflow_dispatch:
 
 jobs:
@@ -17,6 +22,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
