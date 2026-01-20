@@ -1,9 +1,9 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
-const { fork } = require('child_process');
+import { app, BrowserWindow } from 'electron';
+import path from 'path';
+import { fork, ChildProcess } from 'child_process';
 
-let mainWindow;
-let serverProcess;
+let mainWindow: BrowserWindow | null;
+let serverProcess: ChildProcess | undefined;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -21,10 +21,22 @@ function createWindow() {
   // Determine start URL
   let startUrl;
   if (isDev) {
-    startUrl = process.env.ELECTRON_START_URL || `file://${path.join(__dirname, '../client/dist/index.html')}`;
+    // In dev, the dist will be in main.js's parent (electron/dist/main.js -> electron/)
+    // then ../client/dist/index.html
+    // BUT typically dev mode runs via electron . (source) or compiled.
+    // If we run `tsc` then `electron dist/main.js`, __dirname is `electron/dist`.
+    // So `../client/dist` becomes `electron/client/dist` which is wrong.
+    // We need `../../client/dist` from `electron/dist`.
+
+    // However, usually "dev" means we run `electron .` which uses ts-node or requires compilation.
+    // If we assume we run compiled JS from `electron/dist/`:
+    startUrl = process.env.ELECTRON_START_URL || `file://${path.join(__dirname, '../../client/dist/index.html')}`;
   } else {
-    // In production, we expect the client build to be in 'client-build' sibling folder
-    startUrl = `file://${path.join(__dirname, 'client-build/index.html')}`;
+    // In production, we expect the client build to be in 'client-build' sibling folder to the main script
+    // If main script is at resources/app.asar/dist/main.js
+    // We might place client-build at resources/app.asar/client-build
+    // So `../client-build`
+    startUrl = `file://${path.join(__dirname, '../client-build/index.html')}`;
   }
 
   console.log('Loading URL:', startUrl);
@@ -40,20 +52,21 @@ function startServer() {
   let serverPath;
 
   if (isDev) {
-    serverPath = path.join(__dirname, '../server/index.js');
+    // From electron/dist/main.js -> electron/server/dist/index.js (if server is built there)
+    // Actually server is built to server/dist/index.js
+    // So from electron/dist -> ../../server/dist/index.js
+    serverPath = path.join(__dirname, '../../server/dist/index.js');
   } else {
     // In production, we expect the server to be in 'server-build' sibling folder
     // Note: We will configure electron-builder to unpack this directory (asarUnpack)
     // so we can reference it normally.
-    serverPath = path.join(__dirname, 'server-build/index.js');
+    // from dist/main.js -> ../server-build/index.js
+    serverPath = path.join(__dirname, '../server-build/index.js');
 
-    // However, if we are inside an asar archive, __dirname might be .../app.asar/
+    // However, if we are inside an asar archive, __dirname might be .../app.asar/dist
     // and if we unpacked server-build, it might be in .../app.asar.unpacked/server-build/
     // Electron automatically handles 'app.asar' replacement in paths usually,
     // but for 'child_process' we often need the real path.
-    // Let's rely on electron-builder's standard behavior:
-    // If we reference a file inside app.asar that is unpacked, Electron usually patches fs/path
-    // to point to the unpacked version. BUT 'fork' is a Node API.
 
     // Common workaround: check if we are in ASAR, and if so, point to unpacked.
     if (serverPath.includes('app.asar')) {
@@ -66,7 +79,7 @@ function startServer() {
   // Fork the server process
   serverProcess = fork(serverPath, [], {
     stdio: 'inherit',
-    env: { ...process.env, PORT: 3001 }
+    env: { ...process.env, PORT: "3001" }
   });
 }
 

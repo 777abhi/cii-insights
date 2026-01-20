@@ -1,0 +1,17 @@
+import os from 'os';
+
+export function getLocalIpAddress(): string {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    const ifaces = interfaces[name];
+    if (ifaces) {
+        for (const iface of ifaces) {
+          // Skip internal (i.e. 127.0.0.1) and non-ipv4 addresses
+          if (iface.family === 'IPv4' && !iface.internal) {
+            return iface.address;
+          }
+        }
+    }
+  }
+  return 'localhost';
+}

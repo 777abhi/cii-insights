@@ -1,7 +1,7 @@
 {
   "name": "github-analytics-desktop",
   "version": "1.0.0",
-  "main": "main.js",
+  "main": "dist/main.js",
   "author": "777abhi <777abhi@users.noreply.github.com>",
   "repository": {
     "type": "git",
@@ -12,20 +12,24 @@
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
     "dist:mac": "electron-builder --mac",
-    "dist:linux": "electron-builder --linux"
+    "dist:linux": "electron-builder --linux",
+    "prepare-build": "node dist/prepare-build.js"
   },
   "devDependencies": {
+    "@types/electron": "^1.4.38",
+    "@types/node": "^25.0.9",
     "electron": "^28.2.0",
-    "electron-builder": "^24.9.1"
+    "electron-builder": "^24.9.1",
+    "typescript": "^5.9.3"
   },
   "build": {
     "appId": "com.githubanalytics.app",
     "productName": "GitHub Analytics",
     "directories": {
-      "output": "dist"
+      "output": "dist-build"
     },
     "files": [
-      "main.js",
+      "dist/main.js",
       "package.json",
       "client-build/**/*",
       "server-build/**/*"
