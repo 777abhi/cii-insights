@@ -2,7 +2,7 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer
 } from 'recharts';
 import {
-    Activity, GitCommit, Users, Zap
+    Activity, GitCommit, Users, Zap, Loader
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 
@@ -15,9 +15,17 @@ function Card({ children, className, title, icon: Icon }) {
                     <span>{title}</span>
                 </div>
             )}
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 relative">
                 {children}
             </div>
+        </div>
+    );
+}
+
+function LoadingState() {
+    return (
+        <div className="absolute inset-0 flex items-center justify-center text-dark-muted">
+            <Loader className="animate-spin" size={24} />
         </div>
     );
 }
@@ -45,37 +53,43 @@ export default function Overview({ data }) {
             {/* Summary Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card title="Velocity" icon={Zap}>
-                    <MetricValue
-                        value={data.velocitySeries.reduce((acc, curr) => acc + curr.count, 0)}
-                        unit="commits"
-                        label="Total Volume"
-                        subtext="Over monitored period"
-                    />
+                    {!data.velocitySeries ? <LoadingState /> : (
+                        <MetricValue
+                            value={data.velocitySeries.reduce((acc, curr) => acc + curr.count, 0)}
+                            unit="commits"
+                            label="Total Volume"
+                            subtext="Over monitored period"
+                        />
+                    )}
                 </Card>
                 <Card title="Quality Score" icon={Activity}>
-                    <MetricValue
-                        value={data.qualityScore}
-                        unit="%"
-                        label="Conventional Commits"
-                        color={data.qualityScore > 80 ? "text-success" : data.qualityScore > 50 ? "text-warning" : "text-danger"}
-                    />
+                    {data.qualityScore === undefined ? <LoadingState /> : (
+                        <MetricValue
+                            value={data.qualityScore}
+                            unit="%"
+                            label="Conventional Commits"
+                            color={data.qualityScore > 80 ? "text-success" : data.qualityScore > 50 ? "text-warning" : "text-danger"}
+                        />
+                    )}
                 </Card>
                 <Card title="Contributors" icon={Users}>
-                     <MetricValue
-                        value={data.topContributors ? data.topContributors.length : 0}
-                        unit="active"
-                        label="Team Size"
-                    />
+                    {data.topContributors === undefined ? <LoadingState /> : (
+                        <MetricValue
+                            value={data.topContributors ? data.topContributors.length : 0}
+                            unit="active"
+                            label="Team Size"
+                        />
+                    )}
                 </Card>
                 <Card title="Recent Activity" icon={GitCommit}>
                     <div className="flex flex-col justify-center h-full">
-                         <div className="text-sm text-dark-muted">Last commit:</div>
-                         <div className="text-white font-medium truncate">
+                        <div className="text-sm text-dark-muted">Last commit:</div>
+                        <div className="text-white font-medium truncate">
                             {data.recentCommits[0]?.date.split(' ')[0]}
-                         </div>
-                         <div className="text-xs text-dark-muted truncate">
+                        </div>
+                        <div className="text-xs text-dark-muted truncate">
                             by {data.recentCommits[0]?.author}
-                         </div>
+                        </div>
                     </div>
                 </Card>
             </div>
@@ -83,30 +97,32 @@ export default function Overview({ data }) {
             {/* Velocity Chart */}
             <div className="h-80">
                 <Card title="Commit Velocity Trend" icon={Activity}>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={data.velocitySeries}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#373a40" />
-                            <XAxis dataKey="date" stroke="#909296" fontSize={12} tickFormatter={d => d.slice(5)} minTickGap={30} />
-                            <YAxis stroke="#909296" fontSize={12} />
-                            <RechartsTooltip
-                                contentStyle={{ backgroundColor: '#25262b', borderColor: '#373a40', color: '#fff' }}
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="count"
-                                stroke="#339af0"
-                                strokeWidth={2}
-                                dot={data.velocitySeries.length < 40}
-                                activeDot={{ r: 6 }}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
+                    {!data.velocitySeries ? <LoadingState /> : (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={data.velocitySeries}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#373a40" />
+                                <XAxis dataKey="date" stroke="#909296" fontSize={12} tickFormatter={d => d.slice(5)} minTickGap={30} />
+                                <YAxis stroke="#909296" fontSize={12} />
+                                <RechartsTooltip
+                                    contentStyle={{ backgroundColor: '#25262b', borderColor: '#373a40', color: '#fff' }}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="count"
+                                    stroke="#339af0"
+                                    strokeWidth={2}
+                                    dot={data.velocitySeries.length < 40}
+                                    activeDot={{ r: 6 }}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    )}
                 </Card>
             </div>
 
             {/* Recent Commits List (Brief) */}
             <div>
-                 <Card title="Recent Activity Log" icon={GitCommit}>
+                <Card title="Recent Activity Log" icon={GitCommit}>
                     <div className="overflow-auto pr-2 max-h-60">
                         <div className="space-y-3">
                             {data.recentCommits.map((commit) => (

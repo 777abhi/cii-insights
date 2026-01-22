@@ -17,8 +17,7 @@ const analyzers = [
 ];
 
 export const AnalysisService = {
-  analyze(commits) {
-    // Transform isomorphic-git commits to our format
+  async analyze(commits, onProgress) {
     // Transform isomorphic-git commits to our format
     const processedCommits = commits.map(c => {
       // Fix Heatmap: Parse date using author's timezone offset
@@ -46,10 +45,38 @@ export const AnalysisService = {
       };
     });
 
-    return this.calculateMetrics(processedCommits);
+    const initialResults = {
+      totalCommits: processedCommits.length,
+      recentCommits: processedCommits.slice(0, 10),
+      history: processedCommits,
+    };
+
+    // Send initial data immediately
+    if (onProgress) {
+      onProgress(initialResults);
+    }
+
+    // Run each analyzer sequentially (or could be parallel) and stream updates
+    // Using a loop to simulate "yield" behavior
+    for (const analyzer of analyzers) {
+      // Small delay to allow UI to update if this were blocking (it's not heavy cpu here but good practice for "loading")
+      // In a real heavy compute scenario we might use setImmediate or worker.
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const analysisResult = analyzer.analyze(processedCommits);
+
+      if (onProgress) {
+        onProgress(analysisResult);
+      }
+
+      Object.assign(initialResults, analysisResult);
+    }
+
+    return initialResults;
   },
 
   calculateMetrics(commits) {
+    // Legacy method - still useful if needed without streaming
     const results = {
       totalCommits: commits.length,
       recentCommits: commits.slice(0, 10),
