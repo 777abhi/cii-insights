@@ -1,25 +1,27 @@
-const simpleGit = require('simple-git');
-const path = require('path');
-const fs = require('fs');
+import simpleGit from 'simple-git';
+import path from 'path';
+import fs from 'fs';
 
-const REPO_DIR = path.join(__dirname, '../repos');
+const REPO_DIR = path.join(__dirname, '../../../repos');
 
 // Ensure repo dir exists
 if (!fs.existsSync(REPO_DIR)) {
   fs.mkdirSync(REPO_DIR, { recursive: true });
 }
 
-class GitService {
+class GitServiceClass {
+  repoDir: string;
+
   constructor() {
     this.repoDir = REPO_DIR;
   }
 
-  getRepoName(url) {
+  getRepoName(url: string): string {
     const parts = url.split('/');
     return parts[parts.length - 1].replace('.git', '');
   }
 
-  async cloneOrPull(repoUrl, branch = 'main') {
+  async cloneOrPull(repoUrl: string, branch: string = 'main'): Promise<string> {
     const repoName = this.getRepoName(repoUrl);
     const localPath = path.join(this.repoDir, repoName);
     const git = simpleGit();
@@ -44,7 +46,7 @@ class GitService {
     return localPath;
   }
 
-  async getLog(repoName, branch = 'main') {
+  async getLog(repoName: string, branch: string = 'main'): Promise<string> {
     const localPath = path.join(this.repoDir, repoName);
     const repoGit = simpleGit(localPath);
 
@@ -59,7 +61,7 @@ class GitService {
     return await repoGit.raw(['log', ...logOptions]);
   }
 
-  listRepos() {
+  listRepos(): { name: string }[] {
     if (!fs.existsSync(this.repoDir)) return [];
 
     return fs.readdirSync(this.repoDir).filter(file => {
@@ -67,7 +69,7 @@ class GitService {
     }).map(name => ({ name }));
   }
 
-  deleteRepo(repoName) {
+  deleteRepo(repoName: string): boolean {
     const repoPath = path.join(this.repoDir, repoName);
     if (fs.existsSync(repoPath)) {
       fs.rmSync(repoPath, { recursive: true, force: true });
@@ -76,7 +78,7 @@ class GitService {
     return false;
   }
 
-  deleteAllRepos() {
+  deleteAllRepos(): void {
      if (!fs.existsSync(this.repoDir)) return;
      const allRepos = fs.readdirSync(this.repoDir);
       allRepos.forEach(repo => {
@@ -86,4 +88,4 @@ class GitService {
   }
 }
 
-module.exports = new GitService();
+export const GitService = new GitServiceClass();
