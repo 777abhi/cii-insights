@@ -4,6 +4,7 @@ import FS from '@isomorphic-git/lightning-fs';
 import { Capacitor } from '@capacitor/core';
 import { capacitorHttpPlugin } from './gitHttpPlugin';
 import { Buffer } from 'buffer';
+import { DiffUtils } from '../utils/diffUtils';
 
 // Initialize FS
 const fs = new FS('qe-analytics-fs', { wipe: false });
@@ -135,11 +136,62 @@ export const GitService = {
 
             if (i < DEPTH_FOR_STATS && parent) {
                 try {
-                    const files = await this.getChangedFiles(dir, commit.oid, parent.oid);
-                    stats.files = files.map(f => ({ path: f }));
-                    // Approximate churn: 1 addition/deletion per file
-                    stats.additions = files.length;
-                    stats.deletions = 0;
+                    // Update: getChangedFiles now needs to return OIDs so we can diff content
+                    const changes = await this.getChangedFiles(dir, commit.oid, parent.oid);
+
+                    const filesList = [];
+                    let totalAdditions = 0;
+                    let totalDeletions = 0;
+
+                    for (const change of changes) {
+                        filesList.push({ path: change.path });
+
+                        // Try to compute diff
+                        try {
+                            // Only diff text files or reasonable size files
+                            // For simplicity, we diff all changed files that we can read.
+                            // We need to fetch the blob content.
+
+                            // Helper to read blob
+                            const readBlob = async (oid) => {
+                                if (!oid) return '';
+                                try {
+                                    const { blob } = await git.readBlob({
+                                        fs,
+                                        dir,
+                                        oid
+                                    });
+                                    // Convert Uint8Array to string (assuming utf8)
+                                    return Buffer.from(blob).toString('utf8');
+                                } catch (e) {
+                                    return ''; // Binary or error
+                                }
+                            };
+
+                            const [oldContent, newContent] = await Promise.all([
+                                readBlob(change.oidA),
+                                readBlob(change.oidB)
+                            ]);
+
+                            // Dynamically import DiffUtils to avoid circular dep issues or load it at top
+                            // But we can just use the imported one if we add import at top.
+                            // Assuming we will add import at top.
+                            const diffStats = DiffUtils.computeStats(oldContent, newContent);
+
+                            totalAdditions += diffStats.additions;
+                            totalDeletions += diffStats.deletions;
+
+                        } catch (e) {
+                            // If diff fails (e.g. binary), count as file change only? 
+                            // Or just ignore lines.
+                            console.warn('Diff failed for', change.path);
+                        }
+                    }
+
+                    stats.files = filesList;
+                    stats.additions = totalAdditions;
+                    stats.deletions = totalDeletions;
+
                 } catch (e) {
                     console.error('Error getting stats for ', commit.oid, e);
                 }
@@ -174,7 +226,11 @@ export const GitService = {
 
                 // If OIDs differ, file changed
                 if (oidA !== oidB) {
-                    return filepath;
+                    return {
+                        path: filepath,
+                        oidA,
+                        oidB
+                    };
                 }
             }
         });
