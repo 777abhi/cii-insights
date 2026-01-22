@@ -14,6 +14,23 @@ app.use(express_1.default.json());
 app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
 });
+// Git CORS Proxy
+const proxy = require('cors-anywhere').createServer({
+    originWhitelist: [], // Allow all origins
+    requireHeader: [],
+    removeHeaders: ['cookie', 'cookie2']
+});
+app.use('/git-proxy', (req, res) => {
+    // req.url has /git-proxy stripped by app.use
+    // Fix normalization of // -> / by proxies
+    if (req.url.startsWith('/https:/') && !req.url.startsWith('/https://')) {
+        req.url = req.url.replace('/https:/', '/https://');
+    }
+    if (req.url.startsWith('/http:/') && !req.url.startsWith('/http://')) {
+        req.url = req.url.replace('/http:/', '/http://');
+    }
+    proxy.emit('request', req, res);
+});
 app.use('/api', repoRoutes_1.default);
 app.listen(PORT, () => {
     const ip = (0, network_1.getLocalIpAddress)();

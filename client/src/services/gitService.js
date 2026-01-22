@@ -39,14 +39,20 @@ export const GitService = {
 
         // Determine platform-specific HTTP client
         // Use custom plugin for Native (to bypass CORS), and standard web plugin for Browser
-        const http = Capacitor.isNativePlatform() ? capacitorHttpPlugin : httpWeb;
+        const isNative = Capacitor.isNativePlatform();
+        const http = isNative ? capacitorHttpPlugin : httpWeb;
+
+        // If in browser (not native), use our local CORS proxy
+        if (!isNative && url.startsWith('http')) {
+            url = `/git-proxy/${url}`;
+        }
 
         let exists = false;
         try {
             // Robust check: ensure .git directory exists
             await fs.promises.stat(`${dir}/.git`);
             exists = true;
-        } catch (e) {}
+        } catch (e) { }
 
         // If directory exists but .git is missing (e.g. previous failed clone), treat as not exists
         if (!exists) {
@@ -56,7 +62,7 @@ export const GitService = {
                     console.log(`[GitService] ${repoName} exists but is invalid. Deleting...`);
                     await this.deleteRepo(repoName);
                 }
-            } catch(e) { /* ignore if dir doesn't exist */ }
+            } catch (e) { /* ignore if dir doesn't exist */ }
         }
 
         if (exists) {
@@ -71,7 +77,7 @@ export const GitService = {
                         dir,
                         ref: branch
                     });
-                } catch(e) {
+                } catch (e) {
                     console.log(`Checkout failed, maybe fetch first?`);
                 }
             }
@@ -145,12 +151,12 @@ export const GitService = {
         };
 
         try {
-             // Try native/lightning-fs recursive delete first if supported
-             await fs.promises.rmdir(dir, { recursive: true });
-        } catch(e) {
-             // Fallback to manual recursive delete
-             console.log('Falling back to manual recursive delete', e);
-             await deleteRecursive(dir);
+            // Try native/lightning-fs recursive delete first if supported
+            await fs.promises.rmdir(dir, { recursive: true });
+        } catch (e) {
+            // Fallback to manual recursive delete
+            console.log('Falling back to manual recursive delete', e);
+            await deleteRecursive(dir);
         }
     },
 
