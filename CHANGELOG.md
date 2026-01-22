@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/777abhi/cii-insights/compare/v1.0.0...v1.1.0) (2026-01-22)
+
+
+### Features
+
+* Add a 24-column grid template to the Tailwind CSS configuration. ([b934b7f](https://github.com/777abhi/cii-insights/commit/b934b7fd38363175a149b92f3996e366d60c34e5))
+* add team insights, work patterns, and reorganize dashboard ([3358e6c](https://github.com/777abhi/cii-insights/commit/3358e6cad14747255e8f1913df928b496fa9a0c4))
+* Enhance commit log with file-level statistics for recent commits and improve date parsing in analysis service. ([ae14002](https://github.com/777abhi/cii-insights/commit/ae14002756b54306999e3d1ddaf31492c169cabd))
+* Implement a new `BranchSelector` component with dropdown suggestions and integrate it into the `Layout` component. ([30062af](https://github.com/777abhi/cii-insights/commit/30062af4f29b8262b722bc069651d50472e214a9))
+* Implement a server-side CORS proxy for Git operations and configure the client to use it for non-native environments. ([5c47dc0](https://github.com/777abhi/cii-insights/commit/5c47dc0c13010758a854cdce4b6afdc9466331c1))
+* Implement line-based diffing to accurately calculate commit additions and deletions. ([5fa93a9](https://github.com/777abhi/cii-insights/commit/5fa93a96d6e8043e748fc99991023519c1997416))
+
 # 1.0.0 (2026-01-18)
 
 
