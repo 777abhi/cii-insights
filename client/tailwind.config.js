@@ -18,6 +18,9 @@ export default {
         success: '#51cf66',
         warning: '#fcc419',
         danger: '#ff6b6b'
+      },
+      gridTemplateColumns: {
+        '24': 'repeat(24, minmax(0, 1fr))',
       }
     },
   },
