@@ -1,4 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import BranchSelector from './BranchSelector';
 import { Activity, Users, LayoutDashboard, Search, RefreshCw, Folder, Settings, X, AlertCircle, FileCode, GitCommit } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -37,12 +38,9 @@ export default function Layout({
                                 onChange={(e) => setRepoUrl(e.target.value)}
                             />
                         </div>
-                        <input
-                            type="text"
-                            placeholder="Branch"
-                            className="input w-24"
-                            value={branch}
-                            onChange={(e) => setBranch(e.target.value)}
+                        <BranchSelector
+                            branch={branch}
+                            setBranch={setBranch}
                         />
                         <button
                             type="submit"
