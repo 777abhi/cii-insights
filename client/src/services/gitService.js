@@ -110,10 +110,73 @@ export const GitService = {
     async getLog(url) {
         const repoName = this.getRepoName(url);
         const dir = `${REPO_ROOT}/${repoName}`;
-        return git.log({
+
+        // Get commits
+        const commits = await git.log({
             fs,
             dir,
             depth: 2000,
+        });
+
+        // Enrich with stats (changed files)
+        // Optimization: We only truly need file names for "Hotspots" (Top 10) and counts for "Churn".
+        // We can use git.walk to compare commit vs parent.
+
+        const commitsWithStats = [];
+
+        // Process most recent 300 commits for deep stats (Performance trade-off)
+        const DEPTH_FOR_STATS = 300;
+
+        for (let i = 0; i < commits.length; i++) {
+            const commit = commits[i];
+            const parent = commits[i + 1]; // null if last
+
+            let stats = { files: [], additions: 0, deletions: 0 };
+
+            if (i < DEPTH_FOR_STATS && parent) {
+                try {
+                    const files = await this.getChangedFiles(dir, commit.oid, parent.oid);
+                    stats.files = files.map(f => ({ path: f }));
+                    // Approximate churn: 1 addition/deletion per file
+                    stats.additions = files.length;
+                    stats.deletions = 0;
+                } catch (e) {
+                    console.error('Error getting stats for ', commit.oid, e);
+                }
+            }
+
+            // Merge stats into the commit object
+            commitsWithStats.push({
+                ...commit,
+                ...stats
+            });
+        }
+
+        return commitsWithStats;
+    },
+
+    async getChangedFiles(dir, oid, parentOid) {
+        return git.walk({
+            fs,
+            dir,
+            trees: [git.TREE({ ref: parentOid }), git.TREE({ ref: oid })],
+            map: async function (filepath, [A, B]) {
+                // Ignore directories
+                if (filepath === '.') return;
+
+                // A = parent, B = current
+                if ((await A?.type()) === 'tree' || (await B?.type()) === 'tree') {
+                    return;
+                }
+
+                const oidA = await A?.oid();
+                const oidB = await B?.oid();
+
+                // If OIDs differ, file changed
+                if (oidA !== oidB) {
+                    return filepath;
+                }
+            }
         });
     },
 
