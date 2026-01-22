@@ -1,0 +1,12 @@
+
+> client@1.1.0 dev
+> vite
+
+
+  VITE v7.3.1  ready in 326 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+11:37:34 PM [vite] (client) ✨ new dependencies optimized: vite-plugin-node-polyfills/shims/buffer, vite-plugin-node-polyfills/shims/global, vite-plugin-node-polyfills/shims/process
+11:37:34 PM [vite] (client) ✨ optimized dependencies changed. reloading
+11:40:58 PM [vite] (client) hmr update /src/index.css

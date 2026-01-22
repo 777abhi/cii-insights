@@ -1,6 +1,11 @@
 node_modules/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
+dist/
+build/
+client-build/
+server-build/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
 .DS_Store
+*.log
