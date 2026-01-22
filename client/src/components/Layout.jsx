@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Activity, Users, LayoutDashboard, Search, RefreshCw, Folder, Settings, X, AlertCircle } from 'lucide-react';
+import { Activity, Users, LayoutDashboard, Search, RefreshCw, Folder, Settings, X, AlertCircle, FileCode, GitCommit } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useState } from 'react';
@@ -12,7 +12,6 @@ export default function Layout({
     repoUrl, setRepoUrl, branch, setBranch, handleAnalyze, loading, error, progress
 }) {
     const location = useLocation();
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-dark-bg p-6 text-dark-text relative">
@@ -84,42 +83,66 @@ export default function Layout({
             )}
 
             {/* Navigation */}
-            <nav className="mb-6 flex gap-4 border-b border-dark-border pb-1">
+            <nav className="mb-6 flex gap-4 border-b border-dark-border pb-1 overflow-x-auto">
                 <Link
                     to="/"
                     className={cn(
-                        "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-b-2",
+                        "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap",
                         location.pathname === "/"
                             ? "border-primary text-primary"
                             : "border-transparent text-dark-muted hover:text-white"
                     )}
                 >
                     <LayoutDashboard size={18} />
-                    Dashboard
+                    Overview
                 </Link>
                 <Link
-                    to="/authors"
+                    to="/team"
                     className={cn(
-                        "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-b-2",
-                        location.pathname === "/authors"
+                        "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap",
+                        location.pathname === "/team"
                             ? "border-primary text-primary"
                             : "border-transparent text-dark-muted hover:text-white"
                     )}
                 >
                     <Users size={18} />
-                    Top Authors
+                    Team
+                </Link>
+                <Link
+                    to="/codebase"
+                    className={cn(
+                        "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap",
+                        location.pathname === "/codebase"
+                            ? "border-primary text-primary"
+                            : "border-transparent text-dark-muted hover:text-white"
+                    )}
+                >
+                    <FileCode size={18} />
+                    Codebase
+                </Link>
+                <Link
+                    to="/activity"
+                    className={cn(
+                        "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap",
+                        location.pathname === "/activity"
+                            ? "border-primary text-primary"
+                            : "border-transparent text-dark-muted hover:text-white"
+                    )}
+                >
+                    <GitCommit size={18} />
+                    Activity
                 </Link>
                 <Link
                     to="/manage-repos"
                     className={cn(
-                        "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-b-2",
+                        "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap",
                         location.pathname === "/manage-repos"
                             ? "border-primary text-primary"
                             : "border-transparent text-dark-muted hover:text-white"
                     )}
                 >
                     <Folder size={18} />
-                    Manage Repos
+                    Repos
                 </Link>
             </nav>
 

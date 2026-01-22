@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
-import TopAuthors from './pages/TopAuthors';
+import TeamPerformance from './pages/TeamPerformance';
+import CodebaseHealth from './pages/CodebaseHealth';
+import ActivityLog from './pages/ActivityLog';
 import ManageRepos from './pages/ManageRepos';
 import { GitService } from './services/gitService';
 import { AnalysisService } from './services/analysisService';
@@ -81,8 +83,10 @@ export default function App() {
               SAMPLE_REPOS={SAMPLE_REPOS}
             />
           } />
+          <Route path="team" element={<TeamPerformance data={data} />} />
+          <Route path="codebase" element={<CodebaseHealth data={data} />} />
+          <Route path="activity" element={<ActivityLog data={data} />} />
           <Route path="manage-repos" element={<ManageRepos />} />
-          <Route path="authors" element={<TopAuthors data={data} />} />
         </Route>
       </Routes>
     </BrowserRouter>

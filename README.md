@@ -2,7 +2,7 @@
 
 A modern, cross-platform analytics dashboard for visualizing Quality Engineering metrics from Git repositories.
 
-![Dashboard Overview](docs/images/dashboard.png)
+![Overview](docs/images/overview.png)
 
 ## 🚀 Overview
 
@@ -10,17 +10,34 @@ Gain real-time insights into your team's development velocity, code quality, and
 
 ## ✨ Key Features
 
-### 📊 Comprehensive Metrics
-*   **Velocity**: Visualizes commit volume to track team cadence.
+### 📊 Executive Overview
+Get a high-level view of your project's health with key metrics at a glance.
+*   **Velocity**: Visualizes commit volume trends to track team cadence.
 *   **Quality Score**: Monitors adherence to Conventional Commits standards.
-*   **Code Churn**: Highlights lines added vs. deleted to identify refactoring efforts.
-*   **Hotspots**: Detects frequently modified files ("God Classes") that may need refactoring.
+*   **Summary Metrics**: Instant visibility into churn, team size, and recent activity.
 
-### 👥 Team Insights
-*   **Top Contributors**: Identifies most active authors.
-*   **Activity Trends**: Visualizes individual contributions over time.
+### 👥 Team Performance
+Understand how your team works and collaborate better.
+*   **Work Patterns**: Heatmaps and hourly breakdowns to understand peak activity times.
+*   **Top Contributors**: Identify most active authors and their impact (commits, additions, deletions).
+*   **Activity Trends**: Visualize individual contributions over time.
 
-![Top Authors](docs/images/top_authors.png)
+![Team Performance](docs/images/team_performance.png)
+
+### 🩺 Codebase Health
+Deep dive into the technical state of your repository.
+*   **Hotspots**: Detect frequently modified files ("God Classes") that may need refactoring.
+*   **Code Churn**: Analyze lines added vs. deleted to identify heavy refactoring or instability.
+*   **Commit Types**: Breakdown of commit types (feat, fix, chore) to understand work distribution.
+
+![Codebase Health](docs/images/codebase_health.png)
+
+### 📜 Activity Log
+Full visibility into the repository history.
+*   **Searchable History**: Quickly find commits by message, author, or hash.
+*   **Detailed Diff Stats**: See additions and deletions per commit.
+
+![Activity Log](docs/images/activity_log.png)
 
 ### 🌍 Cross-Platform Support
 Use the dashboard where it suits you best:

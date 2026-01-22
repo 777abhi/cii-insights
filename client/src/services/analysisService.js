@@ -4,6 +4,7 @@ import { ChurnAnalyzer } from './analyzers/churnAnalyzer';
 import { HotspotAnalyzer } from './analyzers/hotspotAnalyzer';
 import { ContributorAnalyzer } from './analyzers/contributorAnalyzer';
 import { CommitTypeAnalyzer } from './analyzers/commitTypeAnalyzer';
+import { WorkPatternAnalyzer } from './analyzers/workPatternAnalyzer';
 
 const analyzers = [
     VelocityAnalyzer,
@@ -11,7 +12,8 @@ const analyzers = [
     ChurnAnalyzer,
     HotspotAnalyzer,
     ContributorAnalyzer,
-    CommitTypeAnalyzer
+    CommitTypeAnalyzer,
+    WorkPatternAnalyzer
 ];
 
 export const AnalysisService = {
@@ -42,6 +44,7 @@ export const AnalysisService = {
     const results = {
       totalCommits: commits.length,
       recentCommits: commits.slice(0, 10),
+      history: commits,
     };
 
     analyzers.forEach(analyzer => {
