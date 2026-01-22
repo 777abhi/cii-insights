@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
-import TopAuthors from './pages/TopAuthors';
+import TeamPerformance from './pages/TeamPerformance';
+import CodebaseHealth from './pages/CodebaseHealth';
+import ActivityLog from './pages/ActivityLog';
 import ManageRepos from './pages/ManageRepos';
 import { GitService } from './services/gitService';
 import { AnalysisService } from './services/analysisService';
@@ -32,23 +34,44 @@ export default function App() {
 
     try {
       await GitService.cloneOrPull(repoUrl, branch, (phase) => {
-          // phase event from isomorphic-git: { phase, loaded, total }
-          if (phase.total) {
-              setProgress(`${phase.phase}: ${Math.round(phase.loaded / phase.total * 100)}%`);
-          } else {
-              setProgress(`${phase.phase}...`);
-          }
+        // phase event from isomorphic-git: { phase, loaded, total }
+        if (phase.total) {
+          setProgress(`${phase.phase}: ${Math.round(phase.loaded / phase.total * 100)}%`);
+        } else {
+          setProgress(`${phase.phase}...`);
+        }
       });
 
       setProgress('Analyzing history...');
       const log = await GitService.getLog(repoUrl);
-      const metrics = AnalysisService.analyze(log);
 
-      // Inject repo name
-      metrics.repo = GitService.getRepoName(repoUrl);
-      metrics.branch = branch;
+      // Initial empty data structure to start with
+      setData({
+        repo: GitService.getRepoName(repoUrl),
+        branch: branch,
+        totalCommits: 0,
+        recentCommits: [],
+        history: [],
+        // Initialize other possibly expected keys if useful for "loading" states, 
+        // effectively handled by checks in components
+      });
 
-      setData(metrics);
+      await AnalysisService.analyze(log, (partialResults) => {
+        setData(prev => {
+          // If prev is null (first update), just return partialResults with repo info
+          // keys: repo, branch are already in 'prev' if we set them above, or we can merge.
+          const newData = {
+            ...(prev || {}),
+            ...partialResults,
+            // Ensure repo metadata holds
+            repo: GitService.getRepoName(repoUrl),
+            branch: branch
+          };
+          return newData;
+        });
+      });
+
+      setProgress('');
     } catch (err) {
       console.error(err);
       setError(err.message || 'Analysis failed');
@@ -81,8 +104,10 @@ export default function App() {
               SAMPLE_REPOS={SAMPLE_REPOS}
             />
           } />
+          <Route path="team" element={<TeamPerformance data={data} />} />
+          <Route path="codebase" element={<CodebaseHealth data={data} />} />
+          <Route path="activity" element={<ActivityLog data={data} />} />
           <Route path="manage-repos" element={<ManageRepos />} />
-          <Route path="authors" element={<TopAuthors data={data} />} />
         </Route>
       </Routes>
     </BrowserRouter>
