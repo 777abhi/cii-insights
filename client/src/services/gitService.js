@@ -112,11 +112,16 @@ export const GitService = {
         const repoName = this.getRepoName(url);
         const dir = `${REPO_ROOT}/${repoName}`;
 
+        // Calculate date 1 year ago
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
         // Get commits
         const commits = await git.log({
             fs,
             dir,
             depth: 2000,
+            since: oneYearAgo
         });
 
         // Enrich with stats (changed files)
