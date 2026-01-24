@@ -27,7 +27,7 @@ export default function TopAuthors({ data }) {
         <div className="flex flex-col items-center justify-center h-96 text-dark-muted">
             <Users size={48} className="mb-4 opacity-50" />
             <h2 className="text-xl font-medium text-white">No Data Available</h2>
-            <p>Please analyze a repository from the Dashboard first.</p>
+            <p>Please analyse a repository from the Dashboard first.</p>
         </div>
     );
 

@@ -1,7 +1,8 @@
 import {
-    BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Legend
+    BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Legend,
+    Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
-import { Activity, Users, Clock, Calendar, Loader } from 'lucide-react';
+import { Activity, Users, Clock, Calendar, Loader, Network } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 const COLORS = ['#339af0', '#51cf66', '#fcc419', '#ff6b6b', '#845ef7', '#f06595'];
@@ -93,6 +94,42 @@ export default function TeamPerformance({ data }) {
                                 <RechartsTooltip cursor={{ fill: '#2c2e33' }} contentStyle={{ backgroundColor: '#25262b', borderColor: '#373a40', color: '#fff' }} />
                                 <Bar dataKey="count" fill="#339af0" radius={[2, 2, 0, 0]} />
                             </BarChart>
+                        </ResponsiveContainer>
+                    )}
+                </Card>
+            </div>
+
+            {/* Knowledge Distribution Radar Chart */}
+            <div className="h-96">
+                <Card title="Knowledge Distribution (Bus Factor)" icon={Network}>
+                    {!data.knowledgeDistribution || data.knowledgeDistribution.length === 0 ? (
+                        data.knowledgeDistribution ? (
+                            <div className="h-full flex items-center justify-center text-dark-muted">
+                                Not enough data for Knowledge Distribution
+                            </div>
+                        ) : <LoadingState />
+                    ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data.knowledgeDistribution}>
+                                <PolarGrid stroke="#373a40" />
+                                <PolarAngleAxis dataKey="subject" tick={{ fill: '#909296', fontSize: 12 }} />
+                                <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={{ fill: '#909296' }} />
+                                {Object.keys(data.knowledgeDistribution[0] || {})
+                                    .filter(k => k !== 'subject' && k !== 'fullMark')
+                                    .map((key, index) => (
+                                        <Radar
+                                            key={key}
+                                            name={key}
+                                            dataKey={key}
+                                            stroke={COLORS[index % COLORS.length]}
+                                            fill={COLORS[index % COLORS.length]}
+                                            fillOpacity={0.3}
+                                        />
+                                    ))
+                                }
+                                <Legend wrapperStyle={{ color: '#909296' }} />
+                                <RechartsTooltip contentStyle={{ backgroundColor: '#25262b', borderColor: '#373a40', color: '#fff' }} />
+                            </RadarChart>
                         </ResponsiveContainer>
                     )}
                 </Card>
