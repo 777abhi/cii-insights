@@ -1,5 +1,6 @@
 import {
-    BarChart, Bar, PieChart, Pie, Cell, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer
+    BarChart, Bar, PieChart, Pie, Cell, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer,
+    AreaChart, Area, Treemap
 } from 'recharts';
 import {
     FileCode, GitPullRequest, PieChart as PieIcon, AlertTriangle, Loader, LucideIcon
@@ -61,6 +62,44 @@ function MetricValue({ label, value, unit, subtext, color = "text-white" }: Metr
     );
 }
 
+const CustomizedTreemapContent = (props: any) => {
+    const { x, y, width, height, index, name } = props;
+
+    // Calculate intensity based on rank/index (Top items are hotter/redder)
+    // index 0 is hottest
+    const opacity = 0.4 + (0.6 * (1 - (index / 10)));
+
+    return (
+        <g>
+            <rect
+                x={x}
+                y={y}
+                width={width}
+                height={height}
+                style={{
+                    fill: '#ff6b6b',
+                    fillOpacity: opacity,
+                    stroke: '#25262b',
+                    strokeWidth: 2,
+                }}
+            />
+            {width > 60 && height > 20 && (
+                <text
+                    x={x + width / 2}
+                    y={y + height / 2}
+                    textAnchor="middle"
+                    fill="#fff"
+                    fontSize={11}
+                    dominantBaseline="middle"
+                    style={{ pointerEvents: 'none' }}
+                >
+                    {name.split('/').pop()}
+                </text>
+            )}
+        </g>
+    );
+};
+
 interface CodebaseHealthProps {
     data: AppData | null;
 }
@@ -71,6 +110,34 @@ export default function CodebaseHealth({ data }: CodebaseHealthProps) {
     return (
         <div className="space-y-6">
             <h2 className="text-xl font-bold text-white">Codebase Health & Quality</h2>
+
+            {/* Churn Trend Chart */}
+            <div className="h-80">
+                <Card title="Code Churn Trend (Rework vs Innovation)" icon={GitPullRequest}>
+                     {!data.churnTrend ? <LoadingState /> : (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={data.churnTrend}>
+                                <defs>
+                                    <linearGradient id="colorAdded" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#51cf66" stopOpacity={0.8}/>
+                                        <stop offset="95%" stopColor="#51cf66" stopOpacity={0}/>
+                                    </linearGradient>
+                                    <linearGradient id="colorDeleted" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#ff6b6b" stopOpacity={0.8}/>
+                                        <stop offset="95%" stopColor="#ff6b6b" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <XAxis dataKey="date" stroke="#909296" fontSize={12} minTickGap={30} tickFormatter={d => d.slice(5)} />
+                                <YAxis stroke="#909296" fontSize={12} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#373a40" />
+                                <RechartsTooltip contentStyle={{ backgroundColor: '#25262b', borderColor: '#373a40', color: '#fff' }} />
+                                <Area type="monotone" dataKey="added" stroke="#51cf66" fillOpacity={1} fill="url(#colorAdded)" />
+                                <Area type="monotone" dataKey="deleted" stroke="#ff6b6b" fillOpacity={1} fill="url(#colorDeleted)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                     )}
+                </Card>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-80">
                 {/* Churn Stats */}
@@ -131,31 +198,22 @@ export default function CodebaseHealth({ data }: CodebaseHealthProps) {
 
             {/* Hotspots Chart */}
             <div className="h-96">
-                <Card title="Hotspots (Most Frequently Changed Files)" icon={FileCode}>
+                <Card title="Hotspots (File Heatmap)" icon={FileCode}>
                     {!data.hotspots ? <LoadingState /> : (
                         data.hotspots.length > 0 ? (
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={data.hotspots} layout="vertical" margin={{ left: 10, right: 30, top: 10 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#373a40" horizontal={false} />
-                                    <XAxis type="number" stroke="#909296" fontSize={12} />
-                                    <YAxis
-                                        type="category"
-                                        dataKey="name"
-                                        stroke="#909296"
-                                        fontSize={11}
-                                        width={250}
-                                        tickFormatter={(value) => {
-                                            // Show only filename if path is too long
-                                            if (value.length > 40) {
-                                                const parts = value.split('/');
-                                                return '.../' + parts[parts.length - 1];
-                                            }
-                                            return value;
-                                        }}
+                                <Treemap
+                                    data={data.hotspots}
+                                    dataKey="value"
+                                    aspectRatio={4 / 3}
+                                    stroke="#25262b"
+                                    content={<CustomizedTreemapContent />}
+                                >
+                                    <RechartsTooltip
+                                        contentStyle={{ backgroundColor: '#25262b', borderColor: '#373a40', color: '#fff' }}
+                                        formatter={(value: any, name: any, props: any) => [value, props.payload.name]}
                                     />
-                                    <RechartsTooltip contentStyle={{ backgroundColor: '#25262b', borderColor: '#373a40', color: '#fff' }} />
-                                    <Bar dataKey="value" fill="#ff6b6b" radius={[0, 4, 4, 0]} barSize={20} />
-                                </BarChart>
+                                </Treemap>
                             </ResponsiveContainer>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-dark-muted">

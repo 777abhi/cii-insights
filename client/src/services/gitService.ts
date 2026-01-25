@@ -49,7 +49,7 @@ export const GitService = {
         try {
             await fs.promises.stat(`${dir}/.git`);
             exists = true;
-        } catch (e) { }
+        } catch { /* ignore */ }
 
         if (!exists) {
             try {
@@ -71,7 +71,7 @@ export const GitService = {
                         dir,
                         ref: branch
                     });
-                } catch (e) {
+                } catch {
                     console.log(`Checkout failed, maybe fetch first?`);
                 }
             }
@@ -105,16 +105,29 @@ export const GitService = {
         const repoName = this.getRepoName(url);
         const dir = `${REPO_ROOT}/${repoName}`;
 
+        // Calculate date 1 year ago
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
         const commits = await git.log({
             fs,
             dir,
             depth: 2000,
+            since: oneYearAgo
         });
 
-        const commitsWithStats: GitCommit[] = [];
-        const DEPTH_FOR_STATS = 300;
+        // Determine platform for performance tuning
+        const isNative = Capacitor.isNativePlatform();
 
-        for (let i = 0; i < commits.length; i++) {
+        // Process most recent commits for deep stats (Performance trade-off)
+        // Reduced from 300 to 50 for Native (Android) to fix "forever" analysis
+        const DEPTH_FOR_STATS = isNative ? 50 : 200;
+        const MAX_FILES_PER_COMMIT = 20; // Skip detailed diffs for massive commits
+        const BATCH_SIZE = 5; // Parallel concurrency limit
+
+        const commitsWithStats = new Array(commits.length);
+
+        const processCommit = async (i: number) => {
             const commit = commits[i];
             const parent = commits[i + 1];
 
@@ -128,7 +141,10 @@ export const GitService = {
                     let totalAdditions = 0;
                     let totalDeletions = 0;
 
-                    for (const change of changes) {
+                    // Limit files to process per commit to avoid stalling
+                    const filesToProcess = changes.slice(0, MAX_FILES_PER_COMMIT);
+
+                    for (const change of filesToProcess) {
                         filesList.push({ path: change.path });
 
                         try {
@@ -170,10 +186,19 @@ export const GitService = {
                 }
             }
 
-            commitsWithStats.push({
+            commitsWithStats[i] = {
                 ...commit,
                 ...stats
-            });
+            };
+        };
+
+        // Process in batches
+        for (let i = 0; i < commits.length; i += BATCH_SIZE) {
+            const batch = [];
+            for (let j = 0; j < BATCH_SIZE && i + j < commits.length; j++) {
+                batch.push(processCommit(i + j));
+            }
+            await Promise.all(batch);
         }
 
         return commitsWithStats;

@@ -1,3 +1,11 @@
+## [1.1.1](https://github.com/777abhi/cii-insights/compare/v1.1.0...v1.1.1) (2026-01-25)
+
+
+### Bug Fixes
+
+* **client:** fix CodebaseHealth crash and optimize analysis for Android ([813a507](https://github.com/777abhi/cii-insights/commit/813a50728f180b775c8c5897a853eda859c84221))
+* **client:** fix CodebaseHealth crash and optimize analysis for Android ([90e190b](https://github.com/777abhi/cii-insights/commit/90e190bd824415cb824de65d5dc3c50cefcfc8fc))
+
 # [1.1.0](https://github.com/777abhi/cii-insights/compare/v1.0.0...v1.1.0) (2026-01-22)
 
 

@@ -52,7 +52,7 @@ export default function Layout({
                             className="btn btn-primary flex items-center gap-2"
                             disabled={loading}
                         >
-                            {loading ? <RefreshCw className="animate-spin" size={16} /> : "Analyze"}
+                            {loading ? <RefreshCw className="animate-spin" size={16} /> : "Analyse"}
                         </button>
                     </form>
                 </div>

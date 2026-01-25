@@ -23,6 +23,8 @@ export const AnalysisService = {
       const timestamp = c.commit.author.timestamp * 1000;
       const offsetMinutes = c.commit.author.timezoneOffset;
 
+      // Shift time so it looks like local time in UTC/ISO string
+      // e.g. 15:00 Tokyo -> 15:00 in string
       const localTime = new Date(timestamp - (offsetMinutes * 60 * 1000));
       const dateStr = localTime.toISOString().replace('T', ' ').substring(0, 19);
 
