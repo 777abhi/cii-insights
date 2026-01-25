@@ -10,6 +10,7 @@ import { GitService } from './services/gitService';
 import { AnalysisService } from './services/analysisService';
 
 const SAMPLE_REPOS = [
+  { name: 'Mock Repo', url: 'mock-repo' },
   { name: 'Playwright Basics', url: 'https://github.com/777abhi/playwright-typescript-basics' },
   { name: 'React', url: 'https://github.com/facebook/react' },
   { name: 'Playwright', url: 'https://github.com/microsoft/playwright' }

@@ -33,7 +33,86 @@ export const GitService = {
         return parts[parts.length - 1].replace('.git', '');
     },
 
+    getMockCommits() {
+        const commits = [];
+        const authors = [
+            { name: 'Alice Smith', email: 'alice@example.com' },
+            { name: 'Bob Jones', email: 'bob@example.com' },
+            { name: 'Charlie Lee', email: 'charlie@example.com' },
+            { name: 'Dave Wilson', email: 'dave@example.com' }
+        ];
+        // Files for hotspots simulation
+        const files = [
+            'src/index.js', 'src/App.js', 'src/components/Header.js',
+            'src/utils/helpers.js', 'README.md', 'package.json',
+            'src/core/Engine.js', 'src/services/api.js'
+        ];
+
+        const now = Math.floor(Date.now() / 1000);
+        const daySeconds = 86400;
+
+        // Generate ~500 commits
+        for (let i = 0; i < 500; i++) {
+            const author = authors[Math.floor(Math.random() * authors.length)];
+            // Random time within last 6 months
+            const timestamp = now - Math.floor(Math.random() * (180 * daySeconds));
+
+            // Generate message
+            const types = ['feat', 'fix', 'chore', 'docs', 'refactor'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const message = `${type}: mock commit message ${i}\n\nDetailed description of commit ${i}`;
+
+            // Stats
+            const additions = Math.floor(Math.random() * 50);
+            const deletions = Math.floor(Math.random() * 20);
+            const changedFiles = [];
+            const numFiles = Math.floor(Math.random() * 3) + 1;
+
+            // Make Engine.js a hotspot
+            if (Math.random() > 0.7) {
+                 changedFiles.push({ path: 'src/core/Engine.js' });
+            }
+
+            for(let j=0; j<numFiles; j++) {
+                const f = files[Math.floor(Math.random() * files.length)];
+                if (!changedFiles.find(x => x.path === f)) {
+                    changedFiles.push({ path: f });
+                }
+            }
+
+            commits.push({
+                oid: `mock-hash-${i}`,
+                commit: {
+                    message,
+                    author: {
+                        name: author.name,
+                        email: author.email,
+                        timestamp,
+                        timezoneOffset: 0
+                    },
+                    committer: {
+                         name: author.name,
+                         email: author.email,
+                         timestamp,
+                         timezoneOffset: 0
+                    }
+                },
+                files: changedFiles,
+                additions,
+                deletions
+            });
+        }
+
+        // Sort by timestamp desc
+        return commits.sort((a, b) => b.commit.author.timestamp - a.commit.author.timestamp);
+    },
+
     async cloneOrPull(url, branch = 'main', onProgress) {
+        if (url === 'mock-repo') {
+            await new Promise(r => setTimeout(r, 1000)); // Simulate delay
+            return '/repos/mock-repo';
+        }
+
         await this.init();
         const repoName = this.getRepoName(url);
         const dir = `${REPO_ROOT}/${repoName}`;
@@ -109,6 +188,10 @@ export const GitService = {
     },
 
     async getLog(url) {
+        if (url === 'mock-repo') {
+            return this.getMockCommits();
+        }
+
         const repoName = this.getRepoName(url);
         const dir = `${REPO_ROOT}/${repoName}`;
 
