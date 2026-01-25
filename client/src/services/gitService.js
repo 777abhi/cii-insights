@@ -53,7 +53,7 @@ export const GitService = {
             // Robust check: ensure .git directory exists
             await fs.promises.stat(`${dir}/.git`);
             exists = true;
-        } catch (e) { }
+        } catch { /* ignore */ }
 
         // If directory exists but .git is missing (e.g. previous failed clone), treat as not exists
         if (!exists) {
@@ -63,7 +63,7 @@ export const GitService = {
                     console.log(`[GitService] ${repoName} exists but is invalid. Deleting...`);
                     await this.deleteRepo(repoName);
                 }
-            } catch (e) { /* ignore if dir doesn't exist */ }
+            } catch { /* ignore if dir doesn't exist */ }
         }
 
         if (exists) {
@@ -78,7 +78,7 @@ export const GitService = {
                         dir,
                         ref: branch
                     });
-                } catch (e) {
+                } catch {
                     console.log(`Checkout failed, maybe fetch first?`);
                 }
             }
@@ -112,23 +112,34 @@ export const GitService = {
         const repoName = this.getRepoName(url);
         const dir = `${REPO_ROOT}/${repoName}`;
 
+        // Calculate date 1 year ago
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
         // Get commits
         const commits = await git.log({
             fs,
             dir,
             depth: 2000,
+            since: oneYearAgo
         });
 
         // Enrich with stats (changed files)
         // Optimization: We only truly need file names for "Hotspots" (Top 10) and counts for "Churn".
         // We can use git.walk to compare commit vs parent.
 
-        const commitsWithStats = [];
+        // Determine platform for performance tuning
+        const isNative = Capacitor.isNativePlatform();
 
-        // Process most recent 300 commits for deep stats (Performance trade-off)
-        const DEPTH_FOR_STATS = 300;
+        // Process most recent commits for deep stats (Performance trade-off)
+        // Reduced from 300 to 50 for Native (Android) to fix "forever" analysis
+        const DEPTH_FOR_STATS = isNative ? 50 : 200;
+        const MAX_FILES_PER_COMMIT = 20; // Skip detailed diffs for massive commits
+        const BATCH_SIZE = 5; // Parallel concurrency limit
 
-        for (let i = 0; i < commits.length; i++) {
+        const commitsWithStats = new Array(commits.length);
+
+        const processCommit = async (i) => {
             const commit = commits[i];
             const parent = commits[i + 1]; // null if last
 
@@ -143,7 +154,10 @@ export const GitService = {
                     let totalAdditions = 0;
                     let totalDeletions = 0;
 
-                    for (const change of changes) {
+                    // Limit files to process per commit to avoid stalling
+                    const filesToProcess = changes.slice(0, MAX_FILES_PER_COMMIT);
+
+                    for (const change of filesToProcess) {
                         filesList.push({ path: change.path });
 
                         // Try to compute diff
@@ -163,7 +177,7 @@ export const GitService = {
                                     });
                                     // Convert Uint8Array to string (assuming utf8)
                                     return Buffer.from(blob).toString('utf8');
-                                } catch (e) {
+                                } catch {
                                     return ''; // Binary or error
                                 }
                             };
@@ -181,7 +195,7 @@ export const GitService = {
                             totalAdditions += diffStats.additions;
                             totalDeletions += diffStats.deletions;
 
-                        } catch (e) {
+                        } catch {
                             // If diff fails (e.g. binary), count as file change only? 
                             // Or just ignore lines.
                             console.warn('Diff failed for', change.path);
@@ -198,10 +212,19 @@ export const GitService = {
             }
 
             // Merge stats into the commit object
-            commitsWithStats.push({
+            commitsWithStats[i] = {
                 ...commit,
                 ...stats
-            });
+            };
+        };
+
+        // Process in batches
+        for (let i = 0; i < commits.length; i += BATCH_SIZE) {
+            const batch = [];
+            for (let j = 0; j < BATCH_SIZE && i + j < commits.length; j++) {
+                batch.push(processCommit(i + j));
+            }
+            await Promise.all(batch);
         }
 
         return commitsWithStats;
@@ -256,7 +279,7 @@ export const GitService = {
             let stats;
             try {
                 stats = await fs.promises.stat(path);
-            } catch (e) { return; } // Doesn't exist
+            } catch { return; } // Doesn't exist
 
             if (stats.isDirectory()) {
                 const files = await fs.promises.readdir(path);

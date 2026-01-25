@@ -28,7 +28,6 @@ export const AnalysisService = {
 
       // Shift time so it looks like local time in UTC/ISO string
       // e.g. 15:00 Tokyo -> 15:00 in string
-      const utcDate = new Date(timestamp);
       const localTime = new Date(timestamp - (offsetMinutes * 60 * 1000));
       const dateStr = localTime.toISOString().replace('T', ' ').substring(0, 19);
 

@@ -1,6 +1,6 @@
 import {
     BarChart, Bar, PieChart, Pie, Cell, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer,
-    AreaChart, Area
+    AreaChart, Area, Treemap
 } from 'recharts';
 import {
     FileCode, GitPullRequest, PieChart as PieIcon, AlertTriangle, Loader
@@ -47,7 +47,7 @@ function MetricValue({ label, value, unit, subtext, color = "text-white" }) {
 }
 
 const CustomizedTreemapContent = (props) => {
-    const { root, depth, x, y, width, height, index, payload, colors, rank, name, value } = props;
+    const { x, y, width, height, index, name } = props;
 
     // Calculate intensity based on rank/index (Top items are hotter/redder)
     // index 0 is hottest
