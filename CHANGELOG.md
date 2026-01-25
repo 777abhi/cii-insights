@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/777abhi/cii-insights/compare/v1.2.1...v1.2.2) (2026-01-25)
+
+
+### Bug Fixes
+
+* **electron:** resolve 'app is damaged' error on macOS M1 ([10513ae](https://github.com/777abhi/cii-insights/commit/10513ae48184575e7ce664da0d4c13933f2d2880))
+
 ## [1.2.1](https://github.com/777abhi/cii-insights/compare/v1.2.0...v1.2.1) (2026-01-25)
 
 
