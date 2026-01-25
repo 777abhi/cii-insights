@@ -40,6 +40,11 @@ jobs:
           cd client
           npm install
 
+      - name: Install Server Dependencies
+        run: |
+          cd server
+          npm install
+
       - name: Install Electron Dependencies
         run: |
           cd electron
@@ -53,10 +58,20 @@ jobs:
           npm run build
         shell: bash
 
+      - name: Build Server
+        run: |
+          cd server
+          npm run build
+
+      - name: Build Electron
+        run: |
+          cd electron
+          npm run build
+
       - name: Prepare Electron Build
         run: |
           cd electron
-          node prepare-build.js
+          npm run prepare-build
 
       - name: Build/Package Electron App
         env:

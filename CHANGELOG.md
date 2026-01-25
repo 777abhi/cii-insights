@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/777abhi/cii-insights/compare/v1.1.1...v1.1.2) (2026-01-25)
+
+
+### Bug Fixes
+
+* resolve prepare electron build error and add build steps ([c6d1a3d](https://github.com/777abhi/cii-insights/commit/c6d1a3d021aefe537fcd4cef796b5e430de2ff32))
+
 ## [1.1.1](https://github.com/777abhi/cii-insights/compare/v1.1.0...v1.1.1) (2026-01-25)
 
 
