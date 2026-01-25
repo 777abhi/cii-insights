@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/777abhi/cii-insights/compare/v1.1.2...v1.2.0) (2026-01-25)
+
+
+### Features
+
+* refresh documentation images using mock repo ([4804e83](https://github.com/777abhi/cii-insights/commit/4804e834cd118c7969a088dacb57ef83ac0a1ca8))
+
 ## [1.1.2](https://github.com/777abhi/cii-insights/compare/v1.1.1...v1.1.2) (2026-01-25)
 
 
