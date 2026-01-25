@@ -64,5 +64,18 @@ Then visit `http://localhost:8080`.
 ### For Developers
 If you want to contribute, build from source, or run the application locally without Docker, please check our [Developer Guide](DEVELOPER.md).
 
+## 🔧 Troubleshooting
+
+### macOS: "App is damaged and can't be opened"
+If you encounter this error on macOS (especially on M1/M2/M3 chips), it is likely due to the application being self-signed or unsigned. To fix this:
+
+1.  Open Terminal.
+2.  Run the following command to remove the quarantine attribute:
+    ```bash
+    xattr -cr /Applications/GitHub\ Analytics.app
+    ```
+    *(Adjust the path if you installed it elsewhere)*
+3.  Launch the application again.
+
 ## 📄 License
 ISC
