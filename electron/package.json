@@ -13,6 +13,7 @@
     "dist:win": "electron-builder --win",
     "dist:mac": "electron-builder --mac",
     "dist:linux": "electron-builder --linux",
+    "build": "tsc",
     "prepare-build": "node dist/prepare-build.js"
   },
   "devDependencies": {
