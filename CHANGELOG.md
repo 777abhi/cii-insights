@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/777abhi/cii-insights/compare/v1.2.0...v1.2.1) (2026-01-25)
+
+
+### Bug Fixes
+
+* **ci:** update electron artifact upload path to dist-build ([3e94075](https://github.com/777abhi/cii-insights/commit/3e9407539d69df69e231f292964b47100992bf4a))
+
 # [1.2.0](https://github.com/777abhi/cii-insights/compare/v1.1.2...v1.2.0) (2026-01-25)
 
 
