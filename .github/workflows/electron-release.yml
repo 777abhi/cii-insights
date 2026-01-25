@@ -85,9 +85,9 @@ jobs:
         with:
           name: ${{ matrix.os }}-build
           path: |
-            electron/dist/*.exe
-            electron/dist/*.dmg
-            electron/dist/*.zip
-            electron/dist/*.AppImage
-            electron/dist/*.deb
+            electron/dist-build/*.exe
+            electron/dist-build/*.dmg
+            electron/dist-build/*.zip
+            electron/dist-build/*.AppImage
+            electron/dist-build/*.deb
           if-no-files-found: ignore
