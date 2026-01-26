@@ -72,7 +72,7 @@ If you encounter this error on macOS (especially on M1/M2/M3 chips), it is likel
 1.  Open Terminal.
 2.  Run the following command to remove the quarantine attribute:
     ```bash
-    xattr -cr /Applications/GitHub\ Analytics.app
+    xattr -cr /Applications/Git\ Analytics.app
     ```
     *(Adjust the path if you installed it elsewhere)*
 3.  Launch the application again.

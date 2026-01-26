@@ -1,6 +1,6 @@
 {
-  "short_name": "GH Analytics",
-  "name": "Github Analytics Dashboard",
+  "short_name": "Git Analytics",
+  "name": "Git Analytics Dashboard",
   "icons": [
     {
       "src": "/vite.svg",

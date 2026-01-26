@@ -1,5 +1,5 @@
 {
-  "name": "github-analytics-desktop",
+  "name": "git-analytics-desktop",
   "version": "1.2.2",
   "main": "dist/main.js",
   "author": "777abhi <777abhi@users.noreply.github.com>",
@@ -27,8 +27,8 @@
     "typescript": "^5.9.3"
   },
   "build": {
-    "appId": "com.githubanalytics.app",
-    "productName": "GitHub Analytics",
+    "appId": "com.gitanalytics.app",
+    "productName": "Git Analytics",
     "directories": {
       "output": "dist-build"
     },
