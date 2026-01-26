@@ -76,6 +76,11 @@ jobs:
       - name: Build/Package Electron App
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           cd electron
           npm run dist
@@ -85,9 +90,9 @@ jobs:
         with:
           name: ${{ matrix.os }}-build
           path: |
-            electron/dist/*.exe
-            electron/dist/*.dmg
-            electron/dist/*.zip
-            electron/dist/*.AppImage
-            electron/dist/*.deb
+            electron/dist-build/*.exe
+            electron/dist-build/*.dmg
+            electron/dist-build/*.zip
+            electron/dist-build/*.AppImage
+            electron/dist-build/*.deb
           if-no-files-found: ignore

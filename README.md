@@ -1,12 +1,12 @@
-# QE Analytics Dashboard
+# Git Analytics Dashboard
 
-A modern, cross-platform analytics dashboard for visualizing Quality Engineering metrics from Git repositories.
+A modern, cross-platform analytics dashboard for visualizing metrics from Git repositories.
 
 ![Overview](docs/images/overview.png)
 
 ## 🚀 Overview
 
-Gain real-time insights into your team's development velocity, code quality, and churn. The QE Analytics Dashboard parses Git history to provide actionable metrics, helping engineering teams improve their processes.
+Gain real-time insights into your team's development velocity, code quality, and churn. The Git Analytics Dashboard parses Git history to provide actionable metrics, helping engineering teams improve their processes.
 
 ## ✨ Key Features
 
@@ -63,6 +63,19 @@ Then visit `http://localhost:8080`.
 
 ### For Developers
 If you want to contribute, build from source, or run the application locally without Docker, please check our [Developer Guide](DEVELOPER.md).
+
+## 🔧 Troubleshooting
+
+### macOS: "App is damaged and can't be opened"
+If you encounter this error on macOS (especially on M1/M2/M3 chips), it is likely due to the application being self-signed or unsigned. To fix this:
+
+1.  Open Terminal.
+2.  Run the following command to remove the quarantine attribute:
+    ```bash
+    xattr -cr /Applications/Git\ Analytics.app
+    ```
+    *(Adjust the path if you installed it elsewhere)*
+3.  Launch the application again.
 
 ## 📄 License
 ISC
