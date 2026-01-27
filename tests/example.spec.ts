@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("API - GitHub (mocked)", async () => {
+test("API - Git (mocked)", async () => {
   const mockRuns = [
     {
       created_at: "2024-01-02T10:00:00Z",
