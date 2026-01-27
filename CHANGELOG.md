@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/777abhi/cii-insights/compare/v1.2.2...v1.2.3) (2026-01-27)
+
+
+### Bug Fixes
+
+* **electron:** remove incompatible tar override to fix build ([9380cbd](https://github.com/777abhi/cii-insights/commit/9380cbd5dcb510a203791d3c8f4ff76160e799a2))
+
 ## [1.2.2](https://github.com/777abhi/cii-insights/compare/v1.2.1...v1.2.2) (2026-01-25)
 
 
