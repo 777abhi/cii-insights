@@ -7,9 +7,6 @@
     "type": "git",
     "url": "git+https://github.com/777abhi/cii-insights.git"
   },
-  "overrides": {
-    "tar": "^7.5.6"
-  },
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder",
