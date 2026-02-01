@@ -181,7 +181,7 @@ export const GitService = {
         const isNative = Capacitor.isNativePlatform();
         const DEPTH_FOR_STATS = isNative ? 50 : 200;
         const MAX_FILES_PER_COMMIT = 20;
-        const BATCH_SIZE = 5;
+        const BATCH_SIZE = isNative ? 1 : 5;
 
         const commitsWithStats: GitCommitWithStats[] = new Array(commits.length);
 
@@ -203,22 +203,32 @@ export const GitService = {
                         filesList.push({ path: change.path });
 
                         try {
-                            const readBlob = async (oid: string | undefined) => {
+                            const readBlobContent = async (oid: string | undefined) => {
                                 if (!oid) return '';
                                 try {
-                                    const { blob } = await git.readBlob({ fs, dir, oid });
-                                    return Buffer.from(blob).toString('utf8');
+                                    // Check size first to avoid memory issues and slow diffs
+                                    const { object, type } = await git.readObject({ fs, dir, oid, encoding: null });
+                                    if (type === 'blob') {
+                                        if (object.length > 500 * 1024) { // 500KB limit
+                                            console.warn(`Skipping large file diff: ${change.path} (${object.length} bytes)`);
+                                            return '';
+                                        }
+                                        return Buffer.from(object).toString('utf8');
+                                    }
+                                    return '';
                                 } catch { return ''; }
                             };
 
                             const [oldContent, newContent] = await Promise.all([
-                                readBlob(change.oidA),
-                                readBlob(change.oidB)
+                                readBlobContent(change.oidA),
+                                readBlobContent(change.oidB)
                             ]);
 
-                            const diffStats = DiffUtils.computeStats(oldContent, newContent);
-                            totalAdditions += diffStats.additions;
-                            totalDeletions += diffStats.deletions;
+                            if (oldContent || newContent) {
+                                const diffStats = DiffUtils.computeStats(oldContent, newContent);
+                                totalAdditions += diffStats.additions;
+                                totalDeletions += diffStats.deletions;
+                            }
 
                         } catch {
                             console.warn('Diff failed for', change.path);
@@ -252,23 +262,80 @@ export const GitService = {
         return commitsWithStats;
     },
 
-    async getChangedFiles(dir: string, oid: string, parentOid: string) {
-        return git.walk({
-            fs,
-            dir,
-            trees: [git.TREE({ ref: parentOid }), git.TREE({ ref: oid })],
-            map: async function (filepath: string, [A, B]: any[]) {
-                if (filepath === '.') return;
-                if ((await A?.type()) === 'tree' || (await B?.type()) === 'tree') {
-                    return;
-                }
-                const oidA = await A?.oid();
-                const oidB = await B?.oid();
-                if (oidA !== oidB) {
-                    return { path: filepath, oidA, oidB };
-                }
-            }
-        });
+    async getChangedFiles(dir: string, newOid: string, oldOid: string) {
+        if (newOid === oldOid) return [];
+        const changes: { path: string, oidA?: string, oidB?: string }[] = [];
+
+        const compare = async (pathPrefix: string, treeOidA: string | undefined, treeOidB: string | undefined) => {
+             if (treeOidA === treeOidB) return;
+
+             let entriesA: any[] = [];
+             let entriesB: any[] = [];
+
+             if (treeOidA) {
+                 try {
+                     const result = await git.readTree({ fs, dir, oid: treeOidA });
+                     entriesA = result.tree;
+                 } catch (e) { console.warn('Error reading tree A', treeOidA); }
+             }
+             if (treeOidB) {
+                 try {
+                     const result = await git.readTree({ fs, dir, oid: treeOidB });
+                     entriesB = result.tree;
+                 } catch (e) { console.warn('Error reading tree B', treeOidB); }
+             }
+
+             // Sort by name using standard comparison to match the loop logic
+             const sorter = (a: any, b: any) => a.path < b.path ? -1 : (a.path > b.path ? 1 : 0);
+             entriesA.sort(sorter);
+             entriesB.sort(sorter);
+
+             let i = 0, j = 0;
+             while (i < entriesA.length || j < entriesB.length) {
+                 const entryA = entriesA[i];
+                 const entryB = entriesB[j];
+
+                 const pathA = entryA ? entryA.path : null;
+                 const pathB = entryB ? entryB.path : null;
+
+                 if (pathA && (!pathB || pathA < pathB)) {
+                     // Deleted (present in A, missing in B)
+                     const fullPath = pathPrefix ? `${pathPrefix}/${pathA}` : pathA;
+                     if (entryA.type === 'tree') {
+                          await compare(fullPath, entryA.oid, undefined);
+                     } else {
+                          changes.push({ path: fullPath, oidA: entryA.oid, oidB: undefined });
+                     }
+                     i++;
+                 } else if (pathB && (!pathA || pathB < pathA)) {
+                     // Added (present in B, missing in A)
+                     const fullPath = pathPrefix ? `${pathPrefix}/${pathB}` : pathB;
+                     if (entryB.type === 'tree') {
+                          await compare(fullPath, undefined, entryB.oid);
+                     } else {
+                          changes.push({ path: fullPath, oidA: undefined, oidB: entryB.oid });
+                     }
+                     j++;
+                 } else {
+                     // Both exist
+                     if (entryA.oid !== entryB.oid) {
+                         const fullPath = pathPrefix ? `${pathPrefix}/${pathA}` : pathA;
+                         if (entryA.type === 'tree' && entryB.type === 'tree') {
+                             await compare(fullPath, entryA.oid, entryB.oid);
+                         } else {
+                             // File changed or type changed
+                             changes.push({ path: fullPath, oidA: entryA.oid, oidB: entryB.oid });
+                         }
+                     }
+                     i++;
+                     j++;
+                 }
+             }
+        };
+
+        // Compare Old -> New
+        await compare('', oldOid, newOid);
+        return changes;
     },
 
     async listRepos() {
