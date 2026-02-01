@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useDeferredValue } from 'react';
 import { GitCommit, Search, User, Calendar, LucideIcon } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { AnalysisResults } from '../types';
@@ -32,15 +32,47 @@ interface ActivityLogProps {
 
 export default function ActivityLog({ data }: ActivityLogProps) {
     const [searchTerm, setSearchTerm] = useState('');
+    // Optimization: Use deferred value to prevent blocking UI updates while typing
+    const deferredSearchTerm = useDeferredValue(searchTerm);
+
+    // Optimization: Memoize commits extraction to maintain stable reference
+    const commits = useMemo(() =>
+        data?.history || data?.recentCommits || [],
+        [data]
+    );
+
+    // Optimization: Memoize filtered results to avoid re-calculation on every render
+    const filteredCommits = useMemo(() => {
+        const term = deferredSearchTerm.toLowerCase();
+        return commits.filter(c =>
+            c.subject.toLowerCase().includes(term) ||
+            c.author.toLowerCase().includes(term) ||
+            c.hash.includes(deferredSearchTerm)
+        );
+    }, [commits, deferredSearchTerm]);
+
+    const [visibleCount, setVisibleCount] = useState(50);
+    const [prevFilteredCommits, setPrevFilteredCommits] = useState(filteredCommits);
+
+    // Optimization: Reset visible count when filtered results change
+    // Using the "adjusting state during rendering" pattern to avoid useEffect cascade
+    if (filteredCommits !== prevFilteredCommits) {
+        setPrevFilteredCommits(filteredCommits);
+        setVisibleCount(50);
+    }
+
+    // Optimization: Infinite scroll handler to load more items as user scrolls
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+        // Load more when near bottom (100px threshold)
+        if (scrollHeight - scrollTop - clientHeight < 100) {
+            setVisibleCount(prev => Math.min(prev + 50, filteredCommits.length));
+        }
+    };
 
     if (!data) return null;
 
-    const commits = data.history || data.recentCommits || [];
-    const filteredCommits = commits.filter(c =>
-        c.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.hash.includes(searchTerm)
-    );
+    const visibleCommits = filteredCommits.slice(0, visibleCount);
 
     return (
         <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col">
@@ -59,9 +91,12 @@ export default function ActivityLog({ data }: ActivityLogProps) {
             </div>
 
             <Card className="flex-1 overflow-hidden">
-                <div className="overflow-auto h-full pr-2">
+                <div
+                    className="overflow-auto h-full pr-2"
+                    onScroll={handleScroll}
+                >
                     <div className="space-y-0">
-                        {filteredCommits.length > 0 ? filteredCommits.map((commit) => (
+                        {visibleCommits.length > 0 ? visibleCommits.map((commit) => (
                             <div key={commit.hash} className="flex gap-4 items-start border-b border-dark-border py-4 last:border-0 hover:bg-dark-border/20 transition-colors px-2 rounded-lg">
                                 <div className="mt-1">
                                     <GitCommit size={20} className="text-primary" />
@@ -95,7 +130,7 @@ export default function ActivityLog({ data }: ActivityLogProps) {
                             </div>
                         )) : (
                             <div className="text-center py-10 text-dark-muted">
-                                No commits found matching your search.
+                                {filteredCommits.length === 0 ? "No commits found matching your search." : ""}
                             </div>
                         )}
                     </div>
