@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/777abhi/cii-insights/compare/v1.2.4...v1.3.0) (2026-02-01)
+
+
+### Features
+
+* allow custom number of days for git log analysis ([b84ff29](https://github.com/777abhi/cii-insights/commit/b84ff298417374024af5a7496a87309803645227))
+
 ## [1.2.4](https://github.com/777abhi/cii-insights/compare/v1.2.3...v1.2.4) (2026-02-01)
 
 
