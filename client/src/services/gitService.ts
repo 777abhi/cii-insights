@@ -29,7 +29,7 @@ export const GitService = {
         return parts[parts.length - 1].replace('.git', '');
     },
 
-    getMockCommits(): GitCommitWithStats[] {
+    getMockCommits(days: number = 30): GitCommitWithStats[] {
         const commits: GitCommitWithStats[] = [];
         const authors = [
             { name: 'Alice Smith', email: 'alice@example.com' },
@@ -48,7 +48,7 @@ export const GitService = {
 
         for (let i = 0; i < 500; i++) {
             const author = authors[Math.floor(Math.random() * authors.length)];
-            const timestamp = now - Math.floor(Math.random() * (180 * daySeconds));
+            const timestamp = now - Math.floor(Math.random() * (days * daySeconds));
             const types = ['feat', 'fix', 'chore', 'docs', 'refactor'];
             const type = types[Math.floor(Math.random() * types.length)];
             const message = `${type}: mock commit message ${i}\n\nDetailed description of commit ${i}`;
@@ -161,21 +161,21 @@ export const GitService = {
         return dir;
     },
 
-    async getLog(url: string): Promise<GitCommitWithStats[]> {
+    async getLog(url: string, days: number = 30): Promise<GitCommitWithStats[]> {
         if (url === 'mock-repo') {
-            return this.getMockCommits();
+            return this.getMockCommits(days);
         }
 
         const repoName = this.getRepoName(url);
         const dir = `${REPO_ROOT}/${repoName}`;
-        const oneYearAgo = new Date();
-        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        const sinceDate = new Date();
+        sinceDate.setDate(sinceDate.getDate() - days);
 
         const commits = await git.log({
             fs,
             dir,
             depth: 2000,
-            since: oneYearAgo
+            since: sinceDate
         });
 
         const isNative = Capacitor.isNativePlatform();

@@ -8,6 +8,8 @@ interface LayoutProps {
     setRepoUrl: (url: string) => void;
     branch: string;
     setBranch: (branch: string) => void;
+    days: number;
+    setDays: (days: number) => void;
     handleAnalyze: (e: React.FormEvent) => void;
     loading: boolean;
     error: string | null;
@@ -15,7 +17,7 @@ interface LayoutProps {
 }
 
 export default function Layout({
-    repoUrl, setRepoUrl, branch, setBranch, handleAnalyze, loading, error, progress
+    repoUrl, setRepoUrl, branch, setBranch, days, setDays, handleAnalyze, loading, error, progress
 }: LayoutProps) {
     const location = useLocation();
 
@@ -47,6 +49,17 @@ export default function Layout({
                             branch={branch}
                             setBranch={setBranch}
                         />
+                        <div className="relative" title="Analysis Period (Days)">
+                            <input
+                                type="number"
+                                className="input w-20 text-center pr-4"
+                                value={days || ''}
+                                min={1}
+                                max={3650}
+                                onChange={(e) => setDays(parseInt(e.target.value) || 0)}
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-dark-muted pointer-events-none">d</span>
+                        </div>
                         <button
                             type="submit"
                             className="btn btn-primary flex items-center gap-2"
