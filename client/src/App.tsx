@@ -20,6 +20,7 @@ const SAMPLE_REPOS = [
 export default function App() {
   const [repoUrl, setRepoUrl] = useState('');
   const [branch, setBranch] = useState('main');
+  const [days, setDays] = useState(30);
   const [data, setData] = useState<AnalysisResults | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export default function App() {
       });
 
       setProgress('Analyzing history...');
-      const log = await GitService.getLog(repoUrl);
+      const log = await GitService.getLog(repoUrl, days || 30);
 
       const initialData: any = {
         repo: GitService.getRepoName(repoUrl),
@@ -89,6 +90,8 @@ export default function App() {
             setRepoUrl={setRepoUrl}
             branch={branch}
             setBranch={setBranch}
+            days={days}
+            setDays={setDays}
             handleAnalyze={handleAnalyze}
             loading={loading}
             error={error}
