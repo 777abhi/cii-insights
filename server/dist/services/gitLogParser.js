@@ -1,13 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+// Pre-compile regexes for performance
+const COMMIT_REGEX = /^COMMIT::([a-f0-9]+)::(.+)::(.+)::(.+)::(.+)$/;
+const FILE_STAT_REGEX = /^ (.+) \| (\d+) (.+)$/;
+const INSERTION_REGEX = /(\d+) insertion/;
+const DELETION_REGEX = /(\d+) deletion/;
 class GitLogParser {
     parse(logOutput) {
         const lines = logOutput.split('\n');
         const commits = [];
         let currentCommit = null;
-        const commitRegex = /^COMMIT::([a-f0-9]+)::(.+)::(.+)::(.+)::(.+)$/;
         for (const line of lines) {
-            const match = line.match(commitRegex);
+            const match = line.match(COMMIT_REGEX);
             if (match) {
                 if (currentCommit) {
                     commits.push(currentCommit);
@@ -25,8 +29,7 @@ class GitLogParser {
             }
             else if (currentCommit) {
                 // Parse stat lines
-                const fileStatRegex = /^ (.+) \| (\d+) (.+)$/;
-                const fileMatch = line.match(fileStatRegex);
+                const fileMatch = line.match(FILE_STAT_REGEX);
                 if (fileMatch) {
                     // It's a file line
                     currentCommit.files.push({
@@ -37,8 +40,8 @@ class GitLogParser {
                 else {
                     if (line.includes('changed') && (line.includes('insertion') || line.includes('deletion'))) {
                         // Parse summary
-                        const insertionsMatch = line.match(/(\d+) insertion/);
-                        const deletionsMatch = line.match(/(\d+) deletion/);
+                        const insertionsMatch = line.match(INSERTION_REGEX);
+                        const deletionsMatch = line.match(DELETION_REGEX);
                         if (insertionsMatch)
                             currentCommit.additions = parseInt(insertionsMatch[1], 10);
                         if (deletionsMatch)
