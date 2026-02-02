@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/777abhi/cii-insights/compare/v1.3.0...v1.3.1) (2026-02-02)
+
+
+### Performance Improvements
+
+* Optimize GitLogParser regex compilation ([8fb5871](https://github.com/777abhi/cii-insights/commit/8fb58711716ce972fd56b8548457aa8057f3a45f))
+
 # [1.3.0](https://github.com/777abhi/cii-insights/compare/v1.2.4...v1.3.0) (2026-02-01)
 
 
