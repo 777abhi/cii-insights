@@ -20,7 +20,7 @@
     "@types/electron": "^1.4.38",
     "@types/node": "^25.0.9",
     "electron": "^35.7.5",
-    "electron-builder": "^26.4.0",
+    "electron-builder": "^26.7.0",
     "typescript": "^5.9.3"
   },
   "build": {
@@ -39,6 +39,7 @@
       "server-build/**/*"
     ],
     "mac": {
+      "icon": "build/icon.png",
       "category": "public.app-category.developer-tools",
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
