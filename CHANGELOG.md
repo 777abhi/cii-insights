@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/777abhi/cii-insights/compare/v1.3.2...v1.3.3) (2026-02-03)
+
+
+### Bug Fixes
+
+* **electron:** resolve macos build errors ([7d2cd38](https://github.com/777abhi/cii-insights/commit/7d2cd38ea99739b90144d9cdc48ef46c57a5314b))
+
 ## [1.3.2](https://github.com/777abhi/cii-insights/compare/v1.3.1...v1.3.2) (2026-02-03)
 
 
