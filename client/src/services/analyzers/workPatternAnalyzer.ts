@@ -35,7 +35,8 @@ export const WorkPatternAnalyzer = {
         dailyActivity[day].count++;
         hourlyActivity[hour].count++;
 
-        const cell = heatmap.find(item => item.day === day && item.hour === hour);
+        // Optimization: O(1) access instead of O(n) find
+        const cell = heatmap[day * 24 + hour];
         if (cell) cell.value++;
     });
 
