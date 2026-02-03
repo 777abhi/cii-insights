@@ -76,13 +76,20 @@ jobs:
       - name: Build/Package Electron App
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          SECRET_CSC_LINK: ${{ secrets.CSC_LINK }}
+          SECRET_CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          SECRET_APPLE_ID: ${{ secrets.APPLE_ID }}
+          SECRET_APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          SECRET_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           cd electron
+          if [ -n "$SECRET_CSC_LINK" ]; then
+            export CSC_LINK="$SECRET_CSC_LINK"
+            export CSC_KEY_PASSWORD="$SECRET_CSC_KEY_PASSWORD"
+            export APPLE_ID="$SECRET_APPLE_ID"
+            export APPLE_ID_PASSWORD="$SECRET_APPLE_ID_PASSWORD"
+            export APPLE_TEAM_ID="$SECRET_APPLE_TEAM_ID"
+          fi
           npm run dist
 
       - name: Upload Artifacts
