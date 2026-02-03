@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/777abhi/cii-insights/compare/v1.3.1...v1.3.2) (2026-02-03)
+
+
+### Performance Improvements
+
+* optimize WorkPatternAnalyzer with O(1) heatmap access ([c2a8dd7](https://github.com/777abhi/cii-insights/commit/c2a8dd7561c2f0bb93b26c65cf38778939848425))
+
 ## [1.3.1](https://github.com/777abhi/cii-insights/compare/v1.3.0...v1.3.1) (2026-02-02)
 
 
