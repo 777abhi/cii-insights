@@ -183,6 +183,10 @@ export const GitService = {
         const MAX_FILES_PER_COMMIT = 20;
         const BATCH_SIZE = isNative ? 1 : 5;
 
+        // Cache for sorted tree entries to avoid redundant reads and sorts.
+        // Map OID -> Sorted Entries Array
+        const treeCache = new Map<string, any[]>();
+
         const commitsWithStats: GitCommitWithStats[] = new Array(commits.length);
 
         const processCommit = async (i: number) => {
@@ -193,7 +197,7 @@ export const GitService = {
 
             if (i < DEPTH_FOR_STATS && parent) {
                 try {
-                    const changes = await this.getChangedFiles(dir, commit.oid, parent.oid);
+                    const changes = await this.getChangedFiles(dir, commit.oid, parent.oid, treeCache);
                     const filesList: any[] = [];
                     let totalAdditions = 0;
                     let totalDeletions = 0;
@@ -262,9 +266,12 @@ export const GitService = {
         return commitsWithStats;
     },
 
-    async getChangedFiles(dir: string, newOid: string, oldOid: string) {
+    async getChangedFiles(dir: string, newOid: string, oldOid: string, treeCache?: Map<string, any[]>) {
         if (newOid === oldOid) return [];
         const changes: { path: string, oidA?: string, oidB?: string }[] = [];
+
+        // Sort by name using standard comparison to match the loop logic
+        const sorter = (a: any, b: any) => a.path < b.path ? -1 : (a.path > b.path ? 1 : 0);
 
         const compare = async (pathPrefix: string, treeOidA: string | undefined, treeOidB: string | undefined) => {
              if (treeOidA === treeOidB) return;
@@ -273,22 +280,29 @@ export const GitService = {
              let entriesB: any[] = [];
 
              if (treeOidA) {
-                 try {
-                     const result = await git.readTree({ fs, dir, oid: treeOidA });
-                     entriesA = result.tree;
-                 } catch (e) { console.warn('Error reading tree A', treeOidA); }
+                 if (treeCache && treeCache.has(treeOidA)) {
+                     entriesA = treeCache.get(treeOidA)!;
+                 } else {
+                     try {
+                         const result = await git.readTree({ fs, dir, oid: treeOidA });
+                         entriesA = result.tree;
+                         entriesA.sort(sorter);
+                         if (treeCache) treeCache.set(treeOidA, entriesA);
+                     } catch { console.warn('Error reading tree A', treeOidA); }
+                 }
              }
              if (treeOidB) {
-                 try {
-                     const result = await git.readTree({ fs, dir, oid: treeOidB });
-                     entriesB = result.tree;
-                 } catch (e) { console.warn('Error reading tree B', treeOidB); }
+                 if (treeCache && treeCache.has(treeOidB)) {
+                     entriesB = treeCache.get(treeOidB)!;
+                 } else {
+                     try {
+                         const result = await git.readTree({ fs, dir, oid: treeOidB });
+                         entriesB = result.tree;
+                         entriesB.sort(sorter);
+                         if (treeCache) treeCache.set(treeOidB, entriesB);
+                     } catch { console.warn('Error reading tree B', treeOidB); }
+                 }
              }
-
-             // Sort by name using standard comparison to match the loop logic
-             const sorter = (a: any, b: any) => a.path < b.path ? -1 : (a.path > b.path ? 1 : 0);
-             entriesA.sort(sorter);
-             entriesB.sort(sorter);
 
              let i = 0, j = 0;
              while (i < entriesA.length || j < entriesB.length) {
