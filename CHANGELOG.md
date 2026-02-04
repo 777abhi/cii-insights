@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/777abhi/cii-insights/compare/v1.3.3...v1.4.0) (2026-02-04)
+
+
+### Features
+
+* Cache sorted tree entries in GitService to optimize diff performance ([c169830](https://github.com/777abhi/cii-insights/commit/c16983071abb29d9d2001172e9a826395145b7d7))
+
 ## [1.3.3](https://github.com/777abhi/cii-insights/compare/v1.3.2...v1.3.3) (2026-02-03)
 
 
