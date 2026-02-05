@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/777abhi/cii-insights/compare/v1.4.0...v1.5.0) (2026-02-05)
+
+
+### Features
+
+* coalesce concurrent git tree requests ([126c951](https://github.com/777abhi/cii-insights/commit/126c9514b68a385dbbf5fa0e7e51add5840d1b1f))
+
 # [1.4.0](https://github.com/777abhi/cii-insights/compare/v1.3.3...v1.4.0) (2026-02-04)
 
 
