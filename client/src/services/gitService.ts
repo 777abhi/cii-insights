@@ -297,12 +297,11 @@ export const GitService = {
                  return p;
              };
 
-             if (treeOidA) {
-                 entriesA = await getTree(treeOidA);
-             }
-             if (treeOidB) {
-                 entriesB = await getTree(treeOidB);
-             }
+             // Optimization: Fetch both trees in parallel
+             [entriesA, entriesB] = await Promise.all([
+                 treeOidA ? getTree(treeOidA) : Promise.resolve([]),
+                 treeOidB ? getTree(treeOidB) : Promise.resolve([])
+             ]);
 
              let i = 0, j = 0;
              while (i < entriesA.length || j < entriesB.length) {

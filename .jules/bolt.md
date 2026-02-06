@@ -5,3 +5,7 @@
 ## 2024-05-22 - Tracked Build Artifacts
 **Learning:** The `server/dist` directory is tracked in git.
 **Action:** When modifying server source, ensure `npm run build` is run and the updated `dist` files are included in the commit.
+
+## 2024-05-23 - Sequential Tree Comparison
+**Learning:** `GitService` was fetching git trees sequentially during diff computation, doubling the latency for each directory traversal step.
+**Action:** Use `Promise.all` to fetch both trees in parallel when computing recursive diffs.
