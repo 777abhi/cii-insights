@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/777abhi/cii-insights/compare/v1.5.0...v1.5.1) (2026-02-06)
+
+
+### Performance Improvements
+
+* parallelize git tree fetching in diff computation ([950f003](https://github.com/777abhi/cii-insights/commit/950f0038e95b0fd3c0718fab2191313fbb4e3ded))
+
 # [1.5.0](https://github.com/777abhi/cii-insights/compare/v1.4.0...v1.5.0) (2026-02-05)
 
 
