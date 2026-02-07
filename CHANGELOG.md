@@ -1,3 +1,10 @@
+## [1.5.2](https://github.com/777abhi/cii-insights/compare/v1.5.1...v1.5.2) (2026-02-07)
+
+
+### Performance Improvements
+
+* **client:** optimize AnalysisService to remove artificial delay ([d5c8f15](https://github.com/777abhi/cii-insights/commit/d5c8f15c98010be2956c2fba801ad33824b11aef))
+
 ## [1.5.1](https://github.com/777abhi/cii-insights/compare/v1.5.0...v1.5.1) (2026-02-06)
 
 
