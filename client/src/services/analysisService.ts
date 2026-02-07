@@ -50,7 +50,8 @@ export const AnalysisService = {
     }
 
     for (const analyzer of analyzers) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Yield to main thread to allow UI updates, but don't add unnecessary delay
+      await new Promise(resolve => setTimeout(resolve, 0));
       const analysisResult = analyzer.analyze(processedCommits);
 
       if (onProgress) {
