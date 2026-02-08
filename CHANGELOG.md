@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/777abhi/cii-insights/compare/v1.5.2...v1.6.0) (2026-02-08)
+
+
+### Features
+
+* **client:** parallelize git tree diffing ([820ec8a](https://github.com/777abhi/cii-insights/commit/820ec8a9ebfec1e16310c7b8a7e33ddfda1e3dcc))
+
 ## [1.5.2](https://github.com/777abhi/cii-insights/compare/v1.5.1...v1.5.2) (2026-02-07)
 
 
