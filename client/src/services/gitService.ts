@@ -272,7 +272,7 @@ export const GitService = {
         const changes: { path: string, oidA?: string, oidB?: string }[] = [];
 
         // Sort by name using standard comparison to match the loop logic
-        const sorter = (a: any, b: any) => a.path < b.path ? -1 : (a.path > b.path ? 1 : 0);
+        const sorter = (a: { path: string }, b: { path: string }) => a.path < b.path ? -1 : (a.path > b.path ? 1 : 0);
 
         const compare = async (pathPrefix: string, treeOidA: string | undefined, treeOidB: string | undefined) => {
              if (treeOidA === treeOidB) return;
@@ -303,6 +303,8 @@ export const GitService = {
                  treeOidB ? getTree(treeOidB) : Promise.resolve([])
              ]);
 
+             const promises: Promise<void>[] = [];
+
              let i = 0, j = 0;
              while (i < entriesA.length || j < entriesB.length) {
                  const entryA = entriesA[i];
@@ -315,7 +317,7 @@ export const GitService = {
                      // Deleted (present in A, missing in B)
                      const fullPath = pathPrefix ? `${pathPrefix}/${pathA}` : pathA;
                      if (entryA.type === 'tree') {
-                          await compare(fullPath, entryA.oid, undefined);
+                          promises.push(compare(fullPath, entryA.oid, undefined));
                      } else {
                           changes.push({ path: fullPath, oidA: entryA.oid, oidB: undefined });
                      }
@@ -324,7 +326,7 @@ export const GitService = {
                      // Added (present in B, missing in A)
                      const fullPath = pathPrefix ? `${pathPrefix}/${pathB}` : pathB;
                      if (entryB.type === 'tree') {
-                          await compare(fullPath, undefined, entryB.oid);
+                          promises.push(compare(fullPath, undefined, entryB.oid));
                      } else {
                           changes.push({ path: fullPath, oidA: undefined, oidB: entryB.oid });
                      }
@@ -334,7 +336,7 @@ export const GitService = {
                      if (entryA.oid !== entryB.oid) {
                          const fullPath = pathPrefix ? `${pathPrefix}/${pathA}` : pathA;
                          if (entryA.type === 'tree' && entryB.type === 'tree') {
-                             await compare(fullPath, entryA.oid, entryB.oid);
+                             promises.push(compare(fullPath, entryA.oid, entryB.oid));
                          } else {
                              // File changed or type changed
                              changes.push({ path: fullPath, oidA: entryA.oid, oidB: entryB.oid });
@@ -344,11 +346,16 @@ export const GitService = {
                      j++;
                  }
              }
+             // Optimization: Process sub-trees in parallel (Parallel DFS)
+             // Instead of awaiting recursive calls sequentially, we collect promises and await them all at once.
+             await Promise.all(promises);
         };
 
         // Compare Old -> New
         await compare('', oldOid, newOid);
-        return changes;
+
+        // Sort changes to ensure deterministic order as parallel processing may finish out of order
+        return changes.sort(sorter);
     },
 
     async listRepos() {
