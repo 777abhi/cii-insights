@@ -11,6 +11,9 @@ import { GitCommitWithStats } from '../types';
 const fs = new FS('qe-analytics-fs', { wipe: false });
 const REPO_ROOT = '/repos';
 
+// Global cache for tree entries to persist across operations
+const globalTreeCache = new Map<string, Promise<any[]>>();
+
 const ensureRoot = async () => {
     try {
         await fs.promises.mkdir(REPO_ROOT);
@@ -183,10 +186,10 @@ export const GitService = {
         const MAX_FILES_PER_COMMIT = 20;
         const BATCH_SIZE = isNative ? 1 : 5;
 
-        // Cache for sorted tree entries to avoid redundant reads and sorts.
-        // Map OID -> Promise of Sorted Entries Array
-        // Uses Promise to coalesce concurrent requests for the same tree
-        const treeCache = new Map<string, Promise<any[]>>();
+        // Prevent memory leaks in long-running sessions
+        if (globalTreeCache.size > 20000) {
+            globalTreeCache.clear();
+        }
 
         const commitsWithStats: GitCommitWithStats[] = new Array(commits.length);
 
@@ -198,7 +201,7 @@ export const GitService = {
 
             if (i < DEPTH_FOR_STATS && parent) {
                 try {
-                    const changes = await this.getChangedFiles(dir, commit.oid, parent.oid, treeCache);
+                    const changes = await this.getChangedFiles(dir, commit.oid, parent.oid);
                     const filesList: any[] = [];
                     let totalAdditions = 0;
                     let totalDeletions = 0;
@@ -267,7 +270,7 @@ export const GitService = {
         return commitsWithStats;
     },
 
-    async getChangedFiles(dir: string, newOid: string, oldOid: string, treeCache?: Map<string, Promise<any[]>>) {
+    async getChangedFiles(dir: string, newOid: string, oldOid: string, treeCache: Map<string, Promise<any[]>> = globalTreeCache) {
         if (newOid === oldOid) return [];
         const changes: { path: string, oidA?: string, oidB?: string }[] = [];
 
