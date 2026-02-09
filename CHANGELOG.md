@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/777abhi/cii-insights/compare/v1.6.0...v1.6.1) (2026-02-09)
+
+
+### Performance Improvements
+
+* **client:** Implement global tree cache for GitService ([71d9120](https://github.com/777abhi/cii-insights/commit/71d9120421ea27871a57d6d65f2eccbd34f48318))
+
 # [1.6.0](https://github.com/777abhi/cii-insights/compare/v1.5.2...v1.6.0) (2026-02-08)
 
 
