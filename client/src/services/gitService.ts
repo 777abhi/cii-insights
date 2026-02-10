@@ -207,40 +207,46 @@ export const GitService = {
                     let totalDeletions = 0;
                     const filesToProcess = changes.slice(0, MAX_FILES_PER_COMMIT);
 
-                    for (const change of filesToProcess) {
-                        filesList.push({ path: change.path });
-
+                    const readBlobContent = async (oid: string | undefined, path: string) => {
+                        if (!oid) return '';
                         try {
-                            const readBlobContent = async (oid: string | undefined) => {
-                                if (!oid) return '';
-                                try {
-                                    // Check size first to avoid memory issues and slow diffs
-                                    const { object, type } = await git.readObject({ fs, dir, oid, encoding: null });
-                                    if (type === 'blob') {
-                                        if (object.length > 500 * 1024) { // 500KB limit
-                                            console.warn(`Skipping large file diff: ${change.path} (${object.length} bytes)`);
-                                            return '';
-                                        }
-                                        return Buffer.from(object).toString('utf8');
-                                    }
+                            // Check size first to avoid memory issues and slow diffs
+                            const { object, type } = await git.readObject({ fs, dir, oid, encoding: null });
+                            if (type === 'blob') {
+                                if (object.length > 500 * 1024) { // 500KB limit
+                                    console.warn(`Skipping large file diff: ${path} (${object.length} bytes)`);
                                     return '';
-                                } catch { return ''; }
-                            };
+                                }
+                                return Buffer.from(object).toString('utf8');
+                            }
+                            return '';
+                        } catch { return ''; }
+                    };
 
+                    // Process file diffs in parallel to speed up analysis
+                    const results = await Promise.all(filesToProcess.map(async (change) => {
+                        try {
                             const [oldContent, newContent] = await Promise.all([
-                                readBlobContent(change.oidA),
-                                readBlobContent(change.oidB)
+                                readBlobContent(change.oidA, change.path),
+                                readBlobContent(change.oidB, change.path)
                             ]);
 
                             if (oldContent || newContent) {
-                                const diffStats = DiffUtils.computeStats(oldContent, newContent);
-                                totalAdditions += diffStats.additions;
-                                totalDeletions += diffStats.deletions;
+                                return {
+                                    path: change.path,
+                                    ...DiffUtils.computeStats(oldContent, newContent)
+                                };
                             }
-
                         } catch {
                             console.warn('Diff failed for', change.path);
                         }
+                        return { path: change.path, additions: 0, deletions: 0 };
+                    }));
+
+                    for (const result of results) {
+                        filesList.push({ path: result.path });
+                        totalAdditions += result.additions;
+                        totalDeletions += result.deletions;
                     }
 
                     stats.files = filesList;
