@@ -1,3 +1,10 @@
+## [1.6.2](https://github.com/777abhi/cii-insights/compare/v1.6.1...v1.6.2) (2026-02-10)
+
+
+### Performance Improvements
+
+* parallelize file diff processing in GitService ([cd7937e](https://github.com/777abhi/cii-insights/commit/cd7937e572fcb9d404dc7cf2b98939d0c5e7effe))
+
 ## [1.6.1](https://github.com/777abhi/cii-insights/compare/v1.6.0...v1.6.1) (2026-02-09)
 
 
