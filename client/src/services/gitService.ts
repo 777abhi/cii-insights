@@ -191,6 +191,41 @@ export const GitService = {
             globalTreeCache.clear();
         }
 
+        // Cache for blob contents to avoid reading the same blob multiple times
+        // especially when processing commits in parallel (where adjacent commits share blobs)
+        const blobCache = new Map<string, Promise<string>>();
+
+        const readBlobContent = async (oid: string | undefined, path: string): Promise<string> => {
+            if (!oid) return '';
+
+            if (blobCache.has(oid)) {
+                return blobCache.get(oid)!;
+            }
+
+            // Simple eviction strategy to prevent memory leaks
+            if (blobCache.size > 100) {
+                blobCache.clear();
+            }
+
+            const promise = (async () => {
+                try {
+                    // Check size first to avoid memory issues and slow diffs
+                    const { object, type } = await git.readObject({ fs, dir, oid, encoding: null });
+                    if (type === 'blob') {
+                        if (object.length > 500 * 1024) { // 500KB limit
+                            console.warn(`Skipping large file diff: ${path} (${object.length} bytes)`);
+                            return '';
+                        }
+                        return Buffer.from(object).toString('utf8');
+                    }
+                    return '';
+                } catch { return ''; }
+            })();
+
+            blobCache.set(oid, promise);
+            return promise;
+        };
+
         const commitsWithStats: GitCommitWithStats[] = new Array(commits.length);
 
         const processCommit = async (i: number) => {
@@ -206,22 +241,6 @@ export const GitService = {
                     let totalAdditions = 0;
                     let totalDeletions = 0;
                     const filesToProcess = changes.slice(0, MAX_FILES_PER_COMMIT);
-
-                    const readBlobContent = async (oid: string | undefined, path: string) => {
-                        if (!oid) return '';
-                        try {
-                            // Check size first to avoid memory issues and slow diffs
-                            const { object, type } = await git.readObject({ fs, dir, oid, encoding: null });
-                            if (type === 'blob') {
-                                if (object.length > 500 * 1024) { // 500KB limit
-                                    console.warn(`Skipping large file diff: ${path} (${object.length} bytes)`);
-                                    return '';
-                                }
-                                return Buffer.from(object).toString('utf8');
-                            }
-                            return '';
-                        } catch { return ''; }
-                    };
 
                     // Process file diffs in parallel to speed up analysis
                     const results = await Promise.all(filesToProcess.map(async (change) => {
