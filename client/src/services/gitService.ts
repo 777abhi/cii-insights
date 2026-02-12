@@ -203,7 +203,9 @@ export const GitService = {
             }
 
             // Simple eviction strategy to prevent memory leaks
-            if (blobCache.size > 100) {
+            // Limit increased to 1000 to cover concurrent batch processing (BATCH_SIZE=5 * MAX_FILES=20 * 2 blobs = ~200 blobs)
+            // A smaller limit (e.g. 100) causes cache thrashing during parallel execution.
+            if (blobCache.size > 1000) {
                 blobCache.clear();
             }
 
