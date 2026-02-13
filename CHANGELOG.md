@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/777abhi/cii-insights/compare/v1.6.2...v1.7.0) (2026-02-13)
+
+
+### Features
+
+* **client:** implement global LRU cache for git blobs to improve performance ([ed8b178](https://github.com/777abhi/cii-insights/commit/ed8b178504b6787f2680496e75d21fc99f1265de))
+
 ## [1.6.2](https://github.com/777abhi/cii-insights/compare/v1.6.1...v1.6.2) (2026-02-10)
 
 
