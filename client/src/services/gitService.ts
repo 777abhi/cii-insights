@@ -14,6 +14,10 @@ const REPO_ROOT = '/repos';
 // Global cache for tree entries to persist across operations
 const globalTreeCache = new Map<string, Promise<any[]>>();
 
+// Global cache for blob contents with LRU eviction
+const globalBlobCache = new Map<string, Promise<string>>();
+const BLOB_CACHE_LIMIT = 2000;
+
 const ensureRoot = async () => {
     try {
         await fs.promises.mkdir(REPO_ROOT);
@@ -191,22 +195,15 @@ export const GitService = {
             globalTreeCache.clear();
         }
 
-        // Cache for blob contents to avoid reading the same blob multiple times
-        // especially when processing commits in parallel (where adjacent commits share blobs)
-        const blobCache = new Map<string, Promise<string>>();
-
         const readBlobContent = async (oid: string | undefined, path: string): Promise<string> => {
             if (!oid) return '';
 
-            if (blobCache.has(oid)) {
-                return blobCache.get(oid)!;
-            }
-
-            // Simple eviction strategy to prevent memory leaks
-            // Limit increased to 1000 to cover concurrent batch processing (BATCH_SIZE=5 * MAX_FILES=20 * 2 blobs = ~200 blobs)
-            // A smaller limit (e.g. 100) causes cache thrashing during parallel execution.
-            if (blobCache.size > 1000) {
-                blobCache.clear();
+            if (globalBlobCache.has(oid)) {
+                // LRU: Refresh key position by re-inserting
+                const promise = globalBlobCache.get(oid)!;
+                globalBlobCache.delete(oid);
+                globalBlobCache.set(oid, promise);
+                return promise;
             }
 
             const promise = (async () => {
@@ -224,7 +221,16 @@ export const GitService = {
                 } catch { return ''; }
             })();
 
-            blobCache.set(oid, promise);
+            globalBlobCache.set(oid, promise);
+
+            // LRU Eviction
+            if (globalBlobCache.size > BLOB_CACHE_LIMIT) {
+                const oldestKey = globalBlobCache.keys().next().value;
+                if (oldestKey) {
+                    globalBlobCache.delete(oldestKey);
+                }
+            }
+
             return promise;
         };
 
