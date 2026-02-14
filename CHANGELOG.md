@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/777abhi/cii-insights/compare/v1.7.0...v1.7.1) (2026-02-14)
+
+
+### Performance Improvements
+
+* optimize git diff processing with cache and yielding ([a44090f](https://github.com/777abhi/cii-insights/commit/a44090f882d609ea3e77b9984b1fbe8128c4e4e3))
+
 # [1.7.0](https://github.com/777abhi/cii-insights/compare/v1.6.2...v1.7.0) (2026-02-13)
 
 
