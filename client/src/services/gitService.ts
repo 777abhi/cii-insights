@@ -14,6 +14,10 @@ const REPO_ROOT = '/repos';
 // Global cache for tree entries to persist across operations
 const globalTreeCache = new Map<string, Promise<any[]>>();
 
+// Global cache for diff stats to persist across operations
+const globalDiffCache = new Map<string, { additions: number; deletions: number }>();
+const DIFF_CACHE_LIMIT = 20000;
+
 // Global cache for blob contents with LRU eviction
 const globalBlobCache = new Map<string, Promise<string>>();
 const BLOB_CACHE_LIMIT = 2000;
@@ -194,6 +198,9 @@ export const GitService = {
         if (globalTreeCache.size > 20000) {
             globalTreeCache.clear();
         }
+        if (globalDiffCache.size > DIFF_CACHE_LIMIT) {
+            globalDiffCache.clear();
+        }
 
         const readBlobContent = async (oid: string | undefined, path: string): Promise<string> => {
             if (!oid) return '';
@@ -252,6 +259,11 @@ export const GitService = {
 
                     // Process file diffs in parallel to speed up analysis
                     const results = await Promise.all(filesToProcess.map(async (change) => {
+                        const cacheKey = `${change.oidA}:${change.oidB}`;
+                        if (globalDiffCache.has(cacheKey)) {
+                            return { path: change.path, ...globalDiffCache.get(cacheKey)! };
+                        }
+
                         try {
                             const [oldContent, newContent] = await Promise.all([
                                 readBlobContent(change.oidA, change.path),
@@ -259,9 +271,21 @@ export const GitService = {
                             ]);
 
                             if (oldContent || newContent) {
+                                // Yield to main thread to avoid blocking UI during heavy diff computations
+                                await new Promise(resolve => setTimeout(resolve, 0));
+
+                                const stats = DiffUtils.computeStats(oldContent, newContent);
+
+                                globalDiffCache.set(cacheKey, stats);
+                                // LRU eviction for diff cache
+                                if (globalDiffCache.size > DIFF_CACHE_LIMIT) {
+                                    const firstKey = globalDiffCache.keys().next().value;
+                                    if (firstKey) globalDiffCache.delete(firstKey);
+                                }
+
                                 return {
                                     path: change.path,
-                                    ...DiffUtils.computeStats(oldContent, newContent)
+                                    ...stats
                                 };
                             }
                         } catch {
