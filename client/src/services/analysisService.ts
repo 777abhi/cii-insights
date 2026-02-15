@@ -54,11 +54,12 @@ export const AnalysisService = {
       await new Promise(resolve => setTimeout(resolve, 0));
       const analysisResult = analyzer.analyze(processedCommits);
 
-      if (onProgress) {
-        onProgress(analysisResult);
-      }
-
       Object.assign(initialResults, analysisResult);
+    }
+
+    // Send final update with all analysis results
+    if (onProgress) {
+      onProgress(initialResults);
     }
 
     return initialResults;
