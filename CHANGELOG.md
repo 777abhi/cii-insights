@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/777abhi/cii-insights/compare/v1.7.1...v1.7.2) (2026-02-15)
+
+
+### Performance Improvements
+
+* **client:** batch analysis updates to reduce re-renders ([989a5da](https://github.com/777abhi/cii-insights/commit/989a5da26237193d45562e4ea01dd74b62d96b6c))
+
 ## [1.7.1](https://github.com/777abhi/cii-insights/compare/v1.7.0...v1.7.1) (2026-02-14)
 
 
