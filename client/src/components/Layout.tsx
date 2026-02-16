@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import BranchSelector from './BranchSelector';
-import { Activity, Users, LayoutDashboard, Search, RefreshCw, Folder, AlertCircle, FileCode, GitCommit } from 'lucide-react';
+import { Activity, Users, LayoutDashboard, Search, RefreshCw, Folder, AlertCircle, FileCode, GitCommit, FolderOpen } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 interface LayoutProps {
@@ -45,6 +45,24 @@ export default function Layout({
                                 onChange={(e) => setRepoUrl(e.target.value)}
                             />
                         </div>
+                        {window.electron && (
+                            <button
+                                type="button"
+                                className="p-2 bg-dark-card border border-dark-border rounded hover:bg-dark-border transition-colors text-dark-muted hover:text-white"
+                                onClick={async () => {
+                                    if (window.electron?.selectFolder) {
+                                        const path = await window.electron.selectFolder();
+                                        if (path) {
+                                            setRepoUrl(path);
+                                            setBranch(''); // Clear branch to use default
+                                        }
+                                    }
+                                }}
+                                title="Browse local folder"
+                            >
+                                <FolderOpen size={20} />
+                            </button>
+                        )}
                         <BranchSelector
                             branch={branch}
                             setBranch={setBranch}

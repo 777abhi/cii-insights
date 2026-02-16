@@ -15,6 +15,7 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
+            preload: path_1.default.join(__dirname, 'preload.js'),
         },
     });
     // Check if we are in dev mode
@@ -77,6 +78,15 @@ function startServer() {
     });
 }
 electron_1.app.on('ready', () => {
+    electron_1.ipcMain.handle('select-folder', async () => {
+        const result = await electron_1.dialog.showOpenDialog({
+            properties: ['openDirectory'],
+        });
+        if (!result.canceled && result.filePaths.length > 0) {
+            return result.filePaths[0];
+        }
+        return null;
+    });
     startServer();
     createWindow();
 });

@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 
 class RepoController {
   async analyzeRepo(req: Request, res: Response) {
-    const { repoUrl, branch = 'main' } = req.body;
+    const { repoUrl, branch } = req.body;
 
     if (!repoUrl) {
       return res.status(400).json({ error: 'Repository URL is required' });
@@ -14,12 +14,12 @@ class RepoController {
       // We don't need localPath return value here necessarily, but the side effect matters
       await GitService.cloneOrPull(repoUrl, branch);
       const repoName = GitService.getRepoName(repoUrl);
-      const logOutput = await GitService.getLog(repoName, branch);
+      const logOutput = await GitService.getLog(repoName, branch || 'HEAD');
       const metrics = analysisService.analyze(logOutput);
 
       res.json({
         repo: repoName,
-        branch,
+        branch: branch || 'HEAD',
         ...metrics
       });
     } catch (error: any) {
