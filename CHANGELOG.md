@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/777abhi/cii-insights/compare/v1.7.4...v1.8.0) (2026-02-16)
+
+
+### Features
+
+* support local folder analysis in GitService ([2bb0167](https://github.com/777abhi/cii-insights/commit/2bb0167c297f7395d8fceaef82f07fec93cf28c6))
+
 ## [1.7.4](https://github.com/777abhi/cii-insights/compare/v1.7.3...v1.7.4) (2026-02-16)
 
 
