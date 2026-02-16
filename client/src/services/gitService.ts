@@ -13,6 +13,7 @@ const REPO_ROOT = '/repos';
 
 // Global cache for tree entries to persist across operations
 const globalTreeCache = new Map<string, Promise<any[]>>();
+const TREE_CACHE_LIMIT = 20000;
 
 // Global cache for diff stats to persist across operations
 const globalDiffCache = new Map<string, { additions: number; deletions: number }>();
@@ -194,14 +195,6 @@ export const GitService = {
         const MAX_FILES_PER_COMMIT = 20;
         const BATCH_SIZE = isNative ? 1 : 5;
 
-        // Prevent memory leaks in long-running sessions
-        if (globalTreeCache.size > 20000) {
-            globalTreeCache.clear();
-        }
-        if (globalDiffCache.size > DIFF_CACHE_LIMIT) {
-            globalDiffCache.clear();
-        }
-
         const readBlobContent = async (oid: string | undefined, path: string): Promise<string> => {
             if (!oid) return '';
 
@@ -341,7 +334,14 @@ export const GitService = {
              let entriesB: any[] = [];
 
              const getTree = (oid: string) => {
-                 if (treeCache && treeCache.has(oid)) return treeCache.get(oid)!;
+                 if (treeCache && treeCache.has(oid)) {
+                     // LRU: Refresh
+                     const p = treeCache.get(oid)!;
+                     treeCache.delete(oid);
+                     treeCache.set(oid, p);
+                     return p;
+                 }
+
                  const p = (async () => {
                      try {
                          const result = await git.readTree({ fs, dir, oid });
@@ -353,7 +353,15 @@ export const GitService = {
                          return [];
                      }
                  })();
-                 if (treeCache) treeCache.set(oid, p);
+
+                 if (treeCache) {
+                     treeCache.set(oid, p);
+                     // LRU Eviction
+                     if (treeCache.size > TREE_CACHE_LIMIT) {
+                         const firstKey = treeCache.keys().next().value;
+                         if (firstKey) treeCache.delete(firstKey);
+                     }
+                 }
                  return p;
              };
 
