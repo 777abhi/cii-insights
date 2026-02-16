@@ -1,7 +1,7 @@
 {
   "name": "client",
   "private": true,
-  "version": "1.7.2",
+  "version": "1.7.3",
   "overrides": {
     "tar": "^6.2.1",
     "elliptic": "^6.6.1"

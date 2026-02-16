@@ -1,3 +1,10 @@
+## [1.7.3](https://github.com/777abhi/cii-insights/compare/v1.7.2...v1.7.3) (2026-02-16)
+
+
+### Performance Improvements
+
+* implement LRU for git tree cache to prevent performance cliffs ([aae271c](https://github.com/777abhi/cii-insights/commit/aae271cbfac36d954e1515609da36e960d5e0eb6))
+
 ## [1.7.2](https://github.com/777abhi/cii-insights/compare/v1.7.1...v1.7.2) (2026-02-15)
 
 
