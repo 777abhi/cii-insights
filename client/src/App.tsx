@@ -36,40 +36,76 @@ export default function App() {
     setProgress('Initializing...');
 
     try {
-      await GitService.cloneOrPull(repoUrl, branch, (phase: any) => {
-        // phase event from isomorphic-git: { phase, loaded, total }
-        if (phase.total) {
-          setProgress(`${phase.phase}: ${Math.round(phase.loaded / phase.total * 100)}%`);
-        } else {
-          setProgress(`${phase.phase}...`);
-        }
-      });
+      const isUrl = repoUrl.startsWith('http') || repoUrl.startsWith('git@') || repoUrl.startsWith('ssh://');
 
-      setProgress('Analyzing history...');
-      const log = await GitService.getLog(repoUrl, days || 30);
-
-      const initialData: any = {
-        repo: GitService.getRepoName(repoUrl),
-        branch: branch,
-        totalCommits: 0,
-        recentCommits: [],
-        history: [],
-      };
-
-      setData(initialData);
-
-      await AnalysisService.analyze(log, (partialResults: any) => {
-        setData(prev => {
-            const prevData = prev || {};
-            const newData = {
-                ...prevData,
-                ...partialResults,
-                repo: GitService.getRepoName(repoUrl),
-                branch: branch
-            } as AnalysisResults;
-            return newData;
+      // Check for local folder analysis in Electron
+      if (window.electron && !isUrl && repoUrl !== 'mock-repo') {
+        setProgress('Analyzing local folder...');
+        const response = await fetch('http://localhost:3001/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ repoUrl, branch: branch || undefined })
         });
-      });
+
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.error || 'Analysis failed');
+        }
+
+        const result = await response.json();
+
+        const mapCommit = (c: any) => ({
+            ...c,
+            message: c.subject,
+            date: c.date.replace('T', ' ').substring(0, 19),
+            files: c.files.map((f: any) => ({ path: f.path }))
+        });
+
+        const mappedData: AnalysisResults = {
+            ...result,
+            recentCommits: result.recentCommits.map(mapCommit),
+            history: result.history.map(mapCommit),
+            repo: result.repo,
+            branch: result.branch
+        };
+
+        setData(mappedData);
+      } else {
+        await GitService.cloneOrPull(repoUrl, branch, (phase: any) => {
+            // phase event from isomorphic-git: { phase, loaded, total }
+            if (phase.total) {
+            setProgress(`${phase.phase}: ${Math.round(phase.loaded / phase.total * 100)}%`);
+            } else {
+            setProgress(`${phase.phase}...`);
+            }
+        });
+
+        setProgress('Analyzing history...');
+        const log = await GitService.getLog(repoUrl, days || 30);
+
+        const initialData: any = {
+            repo: GitService.getRepoName(repoUrl),
+            branch: branch,
+            totalCommits: 0,
+            recentCommits: [],
+            history: [],
+        };
+
+        setData(initialData);
+
+        await AnalysisService.analyze(log, (partialResults: any) => {
+            setData(prev => {
+                const prevData = prev || {};
+                const newData = {
+                    ...prevData,
+                    ...partialResults,
+                    repo: GitService.getRepoName(repoUrl),
+                    branch: branch
+                } as AnalysisResults;
+                return newData;
+            });
+        });
+      }
 
       setProgress('');
     } catch (err: any) {

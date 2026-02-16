@@ -17,7 +17,6 @@
     "prepare-build": "node dist/prepare-build.js"
   },
   "devDependencies": {
-    "@types/electron": "^1.4.38",
     "@types/node": "^25.0.9",
     "electron": "^35.7.5",
     "electron-builder": "^26.7.0",
@@ -31,6 +30,7 @@
     },
     "files": [
       "dist/main.js",
+      "dist/preload.js",
       "package.json",
       "client-build/**/*",
       "server-build/**/*"

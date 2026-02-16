@@ -51,3 +51,11 @@ export interface AnalysisResults {
       heatmap: { day: number; hour: number; value: number }[];
   };
 }
+
+declare global {
+  interface Window {
+    electron?: {
+      selectFolder: () => Promise<string | null>;
+    };
+  }
+}
