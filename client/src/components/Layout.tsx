@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import BranchSelector from './BranchSelector';
+import FileBrowser from './FileBrowser';
 import { Activity, Users, LayoutDashboard, Search, RefreshCw, Folder, AlertCircle, FileCode, GitCommit, FolderOpen } from 'lucide-react';
 import { cn } from '../utils/cn';
 
@@ -20,6 +22,7 @@ export default function Layout({
     repoUrl, setRepoUrl, branch, setBranch, days, setDays, handleAnalyze, loading, error, progress
 }: LayoutProps) {
     const location = useLocation();
+    const [showFileBrowser, setShowFileBrowser] = useState(false);
 
     return (
         <div className="min-h-screen bg-dark-bg p-6 text-dark-text relative">
@@ -45,24 +48,24 @@ export default function Layout({
                                 onChange={(e) => setRepoUrl(e.target.value)}
                             />
                         </div>
-                        {window.electron && (
-                            <button
-                                type="button"
-                                className="p-2 bg-dark-card border border-dark-border rounded hover:bg-dark-border transition-colors text-dark-muted hover:text-white"
-                                onClick={async () => {
-                                    if (window.electron?.selectFolder) {
-                                        const path = await window.electron.selectFolder();
-                                        if (path) {
-                                            setRepoUrl(path);
-                                            setBranch(''); // Clear branch to use default
-                                        }
+                        <button
+                            type="button"
+                            className="p-2 bg-dark-card border border-dark-border rounded hover:bg-dark-border transition-colors text-dark-muted hover:text-white"
+                            onClick={async () => {
+                                if (window.electron?.selectFolder) {
+                                    const path = await window.electron.selectFolder();
+                                    if (path) {
+                                        setRepoUrl(path);
+                                        setBranch(''); // Clear branch to use default
                                     }
-                                }}
-                                title="Browse local folder"
-                            >
-                                <FolderOpen size={20} />
-                            </button>
-                        )}
+                                } else {
+                                    setShowFileBrowser(true);
+                                }
+                            }}
+                            title="Browse local folder"
+                        >
+                            <FolderOpen size={20} />
+                        </button>
                         <BranchSelector
                             branch={branch}
                             setBranch={setBranch}
@@ -184,6 +187,18 @@ export default function Layout({
             <main>
                 <Outlet />
             </main>
+
+            {showFileBrowser && (
+                <FileBrowser
+                    initialPath={repoUrl}
+                    onClose={() => setShowFileBrowser(false)}
+                    onSelect={(path) => {
+                        setRepoUrl(path);
+                        setBranch('');
+                        setShowFileBrowser(false);
+                    }}
+                />
+            )}
         </div>
     );
 }

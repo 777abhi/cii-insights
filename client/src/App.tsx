@@ -38,10 +38,13 @@ export default function App() {
     try {
       const isUrl = repoUrl.startsWith('http') || repoUrl.startsWith('git@') || repoUrl.startsWith('ssh://');
 
-      // Check for local folder analysis in Electron
-      if (window.electron && !isUrl && repoUrl !== 'mock-repo') {
+      // Check for local folder analysis (Electron or Local Dev)
+      if (!isUrl && repoUrl !== 'mock-repo') {
         setProgress('Analyzing local folder...');
-        const response = await fetch('http://localhost:3001/api/analyze', {
+
+        // Use full URL for Electron (file protocol) or relative for Web (proxy)
+        const baseUrl = window.electron ? 'http://localhost:3001' : '';
+        const response = await fetch(`${baseUrl}/api/analyze`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ repoUrl, branch: branch || undefined })
