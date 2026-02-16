@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/777abhi/cii-insights/compare/v1.9.0...v1.9.1) (2026-02-16)
+
+
+### Bug Fixes
+
+* **security:** resolve high-severity vulnerabilities via overrides and dependency updates ([dea14dd](https://github.com/777abhi/cii-insights/commit/dea14dd78e955baecedcc5396d71042385d56581))
+
 # [1.9.0](https://github.com/777abhi/cii-insights/compare/v1.8.0...v1.9.0) (2026-02-16)
 
 
