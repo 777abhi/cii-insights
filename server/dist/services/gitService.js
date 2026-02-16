@@ -17,34 +17,46 @@ class GitServiceClass {
         this.repoDir = REPO_DIR;
     }
     getRepoName(url) {
-        const parts = url.split('/');
-        return parts[parts.length - 1].replace('.git', '');
+        const cleanUrl = url.endsWith('/') || url.endsWith('\\') ? url.slice(0, -1) : url;
+        return path_1.default.basename(cleanUrl).replace('.git', '');
     }
-    async cloneOrPull(repoUrl, branch = 'main') {
+    async cloneOrPull(repoUrl, branch) {
         const repoName = this.getRepoName(repoUrl);
         const localPath = path_1.default.join(this.repoDir, repoName);
         const git = (0, simple_git_1.default)();
         if (fs_1.default.existsSync(localPath)) {
             console.log(`Repository ${repoName} exists. Pulling latest changes...`);
             await (0, simple_git_1.default)(localPath).fetch();
-            try {
-                await (0, simple_git_1.default)(localPath).checkout(branch);
-                await (0, simple_git_1.default)(localPath).pull();
+            if (branch) {
+                try {
+                    await (0, simple_git_1.default)(localPath).checkout(branch);
+                    await (0, simple_git_1.default)(localPath).pull();
+                }
+                catch (e) {
+                    console.log(`Checkout failed, trying to checkout remote branch ${branch}`);
+                    try {
+                        await (0, simple_git_1.default)(localPath).checkout(['-t', `origin/${branch}`]);
+                        await (0, simple_git_1.default)(localPath).pull();
+                    }
+                    catch (err) {
+                        console.error(`Failed to checkout ${branch}`, err);
+                    }
+                }
             }
-            catch (e) {
-                console.log(`Checkout failed, trying to checkout remote branch ${branch}`);
-                await (0, simple_git_1.default)(localPath).checkout(['-t', `origin/${branch}`]);
+            else {
                 await (0, simple_git_1.default)(localPath).pull();
             }
         }
         else {
             console.log(`Cloning ${repoUrl} to ${localPath}...`);
             await git.clone(repoUrl, localPath);
-            await (0, simple_git_1.default)(localPath).checkout(branch);
+            if (branch) {
+                await (0, simple_git_1.default)(localPath).checkout(branch);
+            }
         }
         return localPath;
     }
-    async getLog(repoName, branch = 'main') {
+    async getLog(repoName, branch = 'HEAD') {
         const localPath = path_1.default.join(this.repoDir, repoName);
         const repoGit = (0, simple_git_1.default)(localPath);
         const logOptions = [

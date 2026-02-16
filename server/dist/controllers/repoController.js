@@ -7,7 +7,7 @@ const gitService_1 = require("../services/gitService");
 const analysisService_1 = __importDefault(require("../services/analysisService"));
 class RepoController {
     async analyzeRepo(req, res) {
-        const { repoUrl, branch = 'main' } = req.body;
+        const { repoUrl, branch } = req.body;
         if (!repoUrl) {
             return res.status(400).json({ error: 'Repository URL is required' });
         }
@@ -15,11 +15,11 @@ class RepoController {
             // We don't need localPath return value here necessarily, but the side effect matters
             await gitService_1.GitService.cloneOrPull(repoUrl, branch);
             const repoName = gitService_1.GitService.getRepoName(repoUrl);
-            const logOutput = await gitService_1.GitService.getLog(repoName, branch);
+            const logOutput = await gitService_1.GitService.getLog(repoName, branch || 'HEAD');
             const metrics = analysisService_1.default.analyze(logOutput);
             res.json({
                 repo: repoName,
-                branch,
+                branch: branch || 'HEAD',
                 ...metrics
             });
         }

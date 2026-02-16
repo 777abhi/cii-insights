@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const network_1 = require("./utils/network");
 const repoRoutes_1 = __importDefault(require("./routes/repoRoutes"));
+const fsRoutes_1 = __importDefault(require("./routes/fsRoutes"));
 const stream_1 = require("stream");
 const app = (0, express_1.default)();
 const PORT = 3001;
@@ -99,6 +100,7 @@ app.use('/git-proxy', async (req, res) => {
     }
 });
 app.use('/api', repoRoutes_1.default);
+app.use('/api/fs', fsRoutes_1.default);
 app.listen(PORT, () => {
     const ip = (0, network_1.getLocalIpAddress)();
     console.log(`Server running on port ${PORT}`);

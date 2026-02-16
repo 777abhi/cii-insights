@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { getLocalIpAddress } from './utils/network';
 import repoRoutes from './routes/repoRoutes';
+import fsRoutes from './routes/fsRoutes';
 import { Readable } from 'stream';
 
 const app = express();
@@ -105,6 +106,7 @@ app.use('/git-proxy', async (req, res) => {
 });
 
 app.use('/api', repoRoutes);
+app.use('/api/fs', fsRoutes);
 
 app.listen(PORT, () => {
   const ip = getLocalIpAddress();

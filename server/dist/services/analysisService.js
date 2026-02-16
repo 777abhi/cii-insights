@@ -26,6 +26,7 @@ class AnalysisService {
         const results = {
             totalCommits: commits.length,
             recentCommits: commits.slice(0, 10),
+            history: commits,
         };
         for (const analyzer of this.analyzers) {
             Object.assign(results, analyzer.analyze(commits));
