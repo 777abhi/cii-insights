@@ -81,6 +81,7 @@ jobs:
           SECRET_APPLE_ID: ${{ secrets.APPLE_ID }}
           SECRET_APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           SECRET_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        shell: bash
         run: |
           cd electron
           if [ -n "$SECRET_CSC_LINK" ]; then
