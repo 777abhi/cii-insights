@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/777abhi/cii-insights/compare/v1.8.0...v1.9.0) (2026-02-16)
+
+
+### Features
+
+* add local folder analysis support in Electron app ([9fdff5f](https://github.com/777abhi/cii-insights/commit/9fdff5f5c04ff7b2c77acc70b876f07d8aa64f04))
+
 # [1.8.0](https://github.com/777abhi/cii-insights/compare/v1.7.4...v1.8.0) (2026-02-16)
 
 
