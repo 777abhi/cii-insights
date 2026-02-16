@@ -37,6 +37,8 @@ export const GitService = {
     },
 
     getRepoName(url: string): string {
+        const isUrl = url.startsWith('http') || url.startsWith('https') || url.startsWith('git@') || url.startsWith('ssh://');
+        if (!isUrl) return url;
         const parts = url.split('/');
         return parts[parts.length - 1].replace('.git', '');
     },
@@ -112,6 +114,7 @@ export const GitService = {
         }
 
         await this.init();
+        const isUrl = url.startsWith('http') || url.startsWith('https') || url.startsWith('git@') || url.startsWith('ssh://');
         const repoName = this.getRepoName(url);
         const dir = `${REPO_ROOT}/${repoName}`;
         const isNative = Capacitor.isNativePlatform();
@@ -131,13 +134,21 @@ export const GitService = {
             try {
                 const stat = await fs.promises.stat(dir);
                 if (stat) {
-                    console.log(`[GitService] ${repoName} exists but is invalid. Deleting...`);
-                    await this.deleteRepo(repoName);
+                    // Only delete if it's supposed to be a fresh clone (URL)
+                    if (isUrl) {
+                        console.log(`[GitService] ${repoName} exists but is invalid. Deleting...`);
+                        await this.deleteRepo(repoName);
+                    }
                 }
             } catch { /* ignore */ }
         }
 
         if (exists) {
+            if (!isUrl) {
+                console.log(`[GitService] Using local folder ${repoName} without pulling.`);
+                return dir;
+            }
+
             console.log(`[GitService] Pulling ${repoName}...`);
             const currentBranch = await git.currentBranch({ fs, dir });
             if (currentBranch !== branch) {
@@ -158,6 +169,10 @@ export const GitService = {
                 onProgress
             });
         } else {
+            if (!isUrl) {
+                throw new Error(`Repository folder '${repoName}' not found in ${REPO_ROOT} and input is not a URL.`);
+            }
+
             console.log(`[GitService] Cloning ${repoName}...`);
             await git.clone({
                 fs,
