@@ -1,3 +1,10 @@
+## [1.7.4](https://github.com/777abhi/cii-insights/compare/v1.7.3...v1.7.4) (2026-02-16)
+
+
+### Bug Fixes
+
+* **ci:** use bash shell for electron build step on windows ([5d18c1e](https://github.com/777abhi/cii-insights/commit/5d18c1e877e402068b79ac5c421deffb0bcb500f))
+
 ## [1.7.3](https://github.com/777abhi/cii-insights/compare/v1.7.2...v1.7.3) (2026-02-16)
 
 

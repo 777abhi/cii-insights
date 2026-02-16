@@ -1,6 +1,6 @@
 {
   "name": "git-analytics-desktop",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "main": "dist/main.js",
   "author": "777abhi <777abhi@users.noreply.github.com>",
   "repository": {
