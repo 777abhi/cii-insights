@@ -1,6 +1,9 @@
 {
   "name": "git-analytics-desktop",
   "version": "1.9.0",
+  "overrides": {
+    "@isaacs/brace-expansion": "^5.0.1"
+  },
   "main": "dist/main.js",
   "author": "777abhi <777abhi@users.noreply.github.com>",
   "repository": {
