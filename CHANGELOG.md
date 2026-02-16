@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/777abhi/cii-insights/compare/v1.9.1...v1.10.0) (2026-02-16)
+
+
+### Features
+
+* add browse local repo option for web ([05c35e9](https://github.com/777abhi/cii-insights/commit/05c35e9afb1b3e09065e54c72d23d97c425b41cd))
+
 ## [1.9.1](https://github.com/777abhi/cii-insights/compare/v1.9.0...v1.9.1) (2026-02-16)
 
 
